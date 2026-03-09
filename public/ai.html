@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gym AI Assistant</title>
+</head>
+<body>
+<h2>Gym AI Assistant</h2>
+<input type="text" id="question" placeholder="Ask a fitness question">
+<button onclick="ask()">Ask</button>
+
+<p id="answer"></p>
+
+<script>
+function ask(){
+    const question = document.getElementById("question").value
+
+    fetch("/ai/ask",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({question})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        document.getElementById("answer").innerText = data.answer
+    })
+}
+</script>
+
+</body>
+</html>
