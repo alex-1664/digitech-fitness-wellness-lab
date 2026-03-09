@@ -1,12 +1,8 @@
 {
-  "name": "file-organization-script",
+  "name": "digitech-fitness-system",
   "version": "1.0.0",
-  "description": "Automatic file organizer with logging",
-  "main": "organize.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node organize.js"
-  },
-  "author": "Alexander Kiio",
-  "license": "MIT",
-  "dependencies": {}
+    "start": "node server.js"
+  }
 }
