@@ -1,26 +1,20 @@
-body{
-font-family: Arial;
-background:#f4f4f4;
-padding:20px;
-}
-
-form{
+table{
+width:100%;
 background:white;
-padding:20px;
-width:300px;
-border-radius:10px;
+border-collapse:collapse;
 }
 
-input,select{
-width:100%;
-padding:8px;
-margin:5px 0;
-}
-
-button{
-background:green;
+th{
+background:#0b7dda;
 color:white;
-border:none;
 padding:10px;
-width:100%;
+}
+
+td{
+padding:8px;
+text-align:center;
+}
+
+tr:nth-child(even){
+background:#f2f2f2;
 }
