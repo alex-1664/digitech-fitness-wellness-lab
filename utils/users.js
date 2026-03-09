@@ -1,15 +1,13 @@
-const bcrypt = require("bcrypt")
+app.post("/login", async (req,res)=>{
+  const {username, password} = req.body
+  const user = users.find(u => u.username === username)
+  if(!user) return res.json({success:false, message:"User not found"})
 
-// Example users array
-let users = []
-
-// Add a default admin
-(async ()=>{
-  const hashedPassword = await bcrypt.hash("1234alex",10)
-  users.push({
-    username:"admin",
-    password:hashedPassword
-  })
-})()
-
-module.exports = users
+  const valid = await bcrypt.compare(password, user.password)
+  if(valid){
+    req.session.user = {username: user.username, role: user.role}
+    return res.json({success:true})
+  }else{
+    return res.json({success:false, message:"Wrong password"})
+  }
+})
