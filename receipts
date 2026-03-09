@@ -1,0 +1,146 @@
+// server.js - Digitech Fitness Full Workflow
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
+const axios = require("axios");
+const htmlPdf = require("html-pdf-node"); // npm install html-pdf-node
+require("dotenv").config();
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Serve receipts folder publicly
+if(!fs.existsSync("receipts")) fs.mkdirSync("receipts");
+app.use("/receipts", express.static(path.join(__dirname, "receipts")));
+
+// ----------------- MPESA Functions -----------------
+async function getAccessToken() {
+    const url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
+    const auth = Buffer.from(`${process.env.CONSUMER_KEY}:${process.env.CONSUMER_SECRET}`).toString("base64");
+    const response = await axios.get(url, { headers: { Authorization: `Basic ${auth}` } });
+    return response.data.access_token;
+}
+
+async function stkPush(phone, amount) {
+    const token = await getAccessToken();
+    const url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
+    const timestamp = new Date().toISOString().replace(/[-T:\.Z]/g,"").slice(0,14);
+    const password = Buffer.from(`${process.env.SHORTCODE}${process.env.PASSKEY}${timestamp}`).toString("base64");
+
+    const payload = {
+        BusinessShortCode: process.env.SHORTCODE,
+        Password: password,
+        Timestamp: timestamp,
+        TransactionType: "CustomerPayBillOnline",
+        Amount: amount,
+        PartyA: phone,
+        PartyB: process.env.SHORTCODE,
+        PhoneNumber: phone,
+        CallBackURL: process.env.CALLBACK_URL,
+        AccountReference: "Digitech Fitness",
+        TransactionDesc: "Gym Payment"
+    };
+
+    const response = await axios.post(url, payload, { headers: { Authorization: `Bearer ${token}` } });
+    return response.data;
+}
+
+// ----------------- SMS Function -----------------
+async function sendSMS(phone, message) {
+    try {
+        const smsUrl = "https://sandbox.safaricom.co.ke/mpesa/sms/v1/send";
+        const token = await getAccessToken();
+        await axios.post(smsUrl, {
+            ShortCode: process.env.SHORTCODE,
+            Message: message,
+            Msisdn: phone
+        }, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } });
+        console.log("SMS sent to", phone);
+    } catch (err) {
+        console.log("SMS failed:", err.message);
+    }
+}
+
+// ----------------- Payment Endpoint -----------------
+app.post("/pay", async (req, res) => {
+    try {
+        const { name, phone, plan, amount } = req.body;
+
+        // Trigger MPESA STK Push
+        const stkResponse = await stkPush(phone, amount);
+
+        // Create receipt number
+        const receiptNo = "DG" + Math.floor(1000 + Math.random() * 9000);
+        const receiptData = { receipt: receiptNo, name, phone, plan, amount, mpesa: "Pending" };
+
+        // Save receipt JSON
+        fs.writeFileSync(path.join("receipts", `${receiptNo}.json`), JSON.stringify(receiptData));
+
+        res.json({ stkResponse, receiptData });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Payment failed");
+    }
+});
+
+// ----------------- MPESA Callback -----------------
+app.post("/callback", async (req, res) => {
+    try {
+        const callbackData = req.body;
+        console.log("MPESA Callback:", JSON.stringify(callbackData, null, 2));
+
+        // Extract MPESA receipt code
+        const mpesaCode = callbackData.Body.stkCallback.CallbackMetadata.Item.find(i => i.Name === "MpesaReceiptNumber").Value;
+
+        // Load receipt JSON - map dynamically (example using first receipt in folder)
+        const files = fs.readdirSync("receipts").filter(f => f.endsWith(".json"));
+        if(files.length === 0) return res.sendStatus(200);
+        const receiptFile = path.join("receipts", files[0]);
+        const data = JSON.parse(fs.readFileSync(receiptFile));
+        data.mpesa = mpesaCode;
+
+        // Generate A6 PDF receipt HTML
+        const htmlContent = `
+        <div style="font-family: Arial; width:105mm; height:148mm; padding:10px; border:1px solid #000;">
+          <div style="text-align:center;"><img src="logo.png" width="60"></div>
+          <h2 style="text-align:center;margin:5px;">Digitech Fitness & Wellness Lab</h2>
+          <p style="text-align:center;font-style:italic;font-size:12px;">Where Sweat Writes Success<br>Grind • Grow • Glow</p>
+          <hr>
+          <table style="width:100%; font-size:14px;">
+            <tr><td>Receipt No:</td><td>${data.receipt}</td></tr>
+            <tr><td>Member Name:</td><td>${data.name}</td></tr>
+            <tr><td>Phone:</td><td>${data.phone}</td></tr>
+            <tr><td>Payment Type:</td><td>${data.plan}</td></tr>
+            <tr><td>Amount Paid:</td><td>KSh ${data.amount}</td></tr>
+            <tr><td>Date:</td><td>${new Date().toLocaleDateString()}</td></tr>
+            <tr><td>MPESA Code:</td><td>${data.mpesa}</td></tr>
+          </table>
+          <hr>
+          <div style="text-align:center; margin-top:10px; font-size:12px;">Thank you for choosing Digitech Fitness 💪</div>
+        </div>`;
+
+        // Save PDF
+        const pdfPath = path.join("receipts", `${data.receipt}.pdf`);
+        await htmlPdf.generatePdf({ content: htmlContent }, { path: pdfPath });
+
+        // Update JSON with PDF path
+        fs.writeFileSync(receiptFile, JSON.stringify(data));
+
+        // Send SMS with download link
+        const downloadLink = `https://yourdomain.com/receipts/${data.receipt}.pdf`;
+        const smsMessage = `Digitech Fitness & Wellness Lab\nPayment Received ✅\nAmount: KSh ${data.amount}\nMembership: ${data.plan}\nDownload Receipt: ${downloadLink}\nWhere Sweat Writes Success • Grind • Grow • Glow`;
+        await sendSMS(data.phone, smsMessage);
+
+        res.sendStatus(200);
+    } catch(err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+});
+
+// ----------------- Start Server -----------------
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on port", PORT));
