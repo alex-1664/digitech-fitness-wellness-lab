@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Digitech Fitness Attendance</title>
+
+<script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.min.js"></script>
+
+<style>
+
+body{
+font-family: Arial;
+text-align:center;
+}
+
+#scanner{
+width:500px;
+margin:auto;
+}
+
+table{
+margin-top:20px;
+width:80%;
+border-collapse:collapse;
+}
+
+th,td{
+padding:10px;
+border:1px solid #ccc;
+}
+
+th{
+background:#0b7dda;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Digitech Fitness & Wellness Lab</h2>
+<h3>Member Attendance Scanner</h3>
+
+<div id="scanner"></div>
+
+<h3>Attendance Records</h3>
+
+<table id="attendanceTable">
+
+<thead>
+<tr>
+<th>Member ID</th>
+<th>Date</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+<script src="attendance.js"></script>
+
+</body>
+</html>
