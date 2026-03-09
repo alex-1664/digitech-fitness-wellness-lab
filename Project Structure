@@ -1,0 +1,11 @@
+digitech-fitness-system
+│
+├── server.js          # Express server
+├── mpesa.js           # M-PESA functions (STK push, access token)
+├── payments.html      # Payment page (member enters phone + amount)
+├── payments.js        # Frontend payment logic
+├── receipt.html       # Receipt template
+├── receipt.js         # Auto-fill + download PDF logic
+├── .env               # API keys, Shortcode, etc.
+├── receipts/          # Folder where PDF receipts are saved
+└── package.json
