@@ -1,0 +1,9 @@
+{
+  "name": "file-organizer",
+  "version": "1.0.0",
+  "description": "Automatic file organization script",
+  "main": "organize.js",
+  "scripts": {
+    "start": "node organize.js"
+  }
+}
