@@ -1,10 +1,8 @@
 {
-  "folders": {
-    "src": [".js", ".ts"],
-    "assets/images": [".png", ".jpg", ".jpeg", ".svg", ".gif"],
-    "assets/styles": [".css", ".scss"],
-    "docs": [".md", ".pdf", ".txt"],
-    "tests": [".test.js", ".spec.js"]
-  },
-  "miscFolder": "misc"
+  "ignore": [
+    "package.json",
+    "package-lock.json",
+    "server.js",
+    "node_modules"
+  ]
 }
