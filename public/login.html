@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Digitech Fitness Login</title>
+</head>
+
+<body>
+
+<h2>Digitech Fitness & Wellness Lab</h2>
+<h3>Admin Login</h3>
+
+<input type="password" id="password" placeholder="Enter password">
+<button onclick="login()">Login</button>
+
+<p id="error" style="color:red;"></p>
+
+<script>
+function login(){
+
+const password = document.getElementById("password").value
+
+fetch("/login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({password})
+})
+.then(res=>res.json())
+.then(data=>{
+
+if(data.success){
+window.location="/members.html"
+}else{
+document.getElementById("error").innerText="Wrong password"
+}
+
+})
+
+}
+</script>
+
+</body>
+</html>
