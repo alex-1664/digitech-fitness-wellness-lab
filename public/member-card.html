@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Digitech Fitness Membership Card</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f6f9;
+text-align:center;
+}
+
+.card{
+
+width:350px;
+border:2px solid #000;
+padding:20px;
+margin:auto;
+background:white;
+border-radius:10px;
+
+}
+
+img{
+width:120px;
+}
+
+button{
+margin-top:20px;
+padding:10px 20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Digitech Fitness & Wellness Lab</h2>
+
+<div class="card">
+
+<h3 id="name"></h3>
+
+<p id="memberId"></p>
+
+<img id="qr">
+
+</div>
+
+<button onclick="window.print()">Print Card</button>
+
+<script>
+
+const params = new URLSearchParams(window.location.search)
+
+const name = params.get("name")
+
+const id = params.get("id")
+
+const qr = params.get("qr")
+
+document.getElementById("name").innerText = name
+document.getElementById("memberId").innerText = "Member ID: " + id
+document.getElementById("qr").src = qr
+
+</script>
+
+</body>
+
+</html>
