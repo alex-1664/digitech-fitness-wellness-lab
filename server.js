@@ -120,7 +120,9 @@ const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
 
 console.log("Digitech Fitness System Running")
-
+app.get("/dashboard.html", authMiddleware, (req,res)=>{
+res.sendFile(__dirname + "/public/dashboard.html")
+})
 console.log("Server running on port:", PORT)
 
 })
