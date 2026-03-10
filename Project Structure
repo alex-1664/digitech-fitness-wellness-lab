@@ -1,11 +1,59 @@
 digitech-fitness-system
 │
-├── server.js          # Express server
-├── mpesa.js           # M-PESA functions (STK push, access token)
-├── payments.html      # Payment page (member enters phone + amount)
-├── payments.js        # Frontend payment logic
-├── receipt.html       # Receipt template
-├── receipt.js         # Auto-fill + download PDF logic
-├── .env               # API keys, Shortcode, etc.
-├── receipts/          # Folder where PDF receipts are saved
-└── package.json
+├── server.js                # Main backend server
+├── package.json             # Project dependencies
+├── package-lock.json
+├── .env                     # Environment variables (API keys)
+├── README.md
+│
+├── config
+│   └── mpesaConfig.js       # M-PESA configuration
+│
+├── controllers
+│   ├── authController.js    # Login & authentication
+│   ├── memberController.js  # Member management
+│   ├── paymentController.js # M-PESA payments
+│   ├── attendanceController.js
+│   └── aiController.js      # AI Gym Coach
+│
+├── routes
+│   ├── authRoutes.js
+│   ├── memberRoutes.js
+│   ├── paymentRoutes.js
+│   ├── attendanceRoutes.js
+│   └── aiRoutes.js
+│
+├── middleware
+│   └── authMiddleware.js    # Protect dashboard pages
+│
+├── utils
+│   ├── sms.js               # SMS notifications
+│   ├── receiptGenerator.js  # PDF receipt creator
+│   └── users.js             # User authentication storage
+│
+├── receipts                 # Generated PDF receipts
+│   └── DG1001.pdf
+│
+├── public                   # Frontend pages
+│   │
+│   ├── login.html
+│   ├── register.html
+│   ├── members.html
+│   ├── payments.html
+│   ├── attendance.html
+│   ├── ai.html
+│   └── receipt.html
+│
+├── js                       # Frontend scripts
+│   ├── login.js
+│   ├── members.js
+│   ├── attendance.js
+│   ├── payment.js
+│   ├── receipt.js
+│   └── ai.js
+│
+├── css
+│   └── style.css
+│
+└── docs
+    └── project-structure.md
