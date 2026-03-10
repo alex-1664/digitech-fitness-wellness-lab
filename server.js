@@ -126,3 +126,30 @@ res.sendFile(__dirname + "/public/dashboard.html")
 console.log("Server running on port:", PORT)
 
 })
+app.post("/attendance/checkin",(req,res)=>{
+
+const memberId = req.body.memberId
+
+// Example database lookup
+const member = members.find(m => m.id === memberId)
+
+if(!member){
+
+return res.json({success:false})
+
+}
+
+const attendance = {
+memberId:memberId,
+name:member.name,
+date:new Date()
+}
+
+attendanceRecords.push(attendance)
+
+res.json({
+success:true,
+name:member.name
+})
+
+})
