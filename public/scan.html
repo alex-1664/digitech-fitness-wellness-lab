@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Digitech Fitness QR Check-in</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f4f6f9;
+text-align:center;
+padding:20px;
+}
+
+#reader{
+width:350px;
+margin:auto;
+}
+
+.result{
+margin-top:20px;
+font-size:18px;
+color:green;
+}
+
+.error{
+color:red;
+}
+
+button{
+padding:10px 20px;
+background:#111;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Digitech Fitness & Wellness Lab</h2>
+
+<h3>QR Code Member Check-In</h3>
+
+<div id="reader"></div>
+
+<div id="result" class="result"></div>
+
+<br>
+
+<button onclick="startScanner()">Start Scanner</button>
+
+<script>
+
+function startScanner(){
+
+const scanner = new Html5Qrcode("reader")
+
+scanner.start(
+{ facingMode: "environment" },
+{
+fps:10,
+qrbox:250
+},
+
+function(decodedText){
+
+document.getElementById("result").innerHTML =
+"QR Detected: " + decodedText
+
+sendAttendance(decodedText)
+
+scanner.stop()
+
+},
+
+function(errorMessage){
+
+console.log(errorMessage)
+
+}
+
+)
+
+}
+
+function sendAttendance(memberId){
+
+fetch("/attendance/checkin",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+memberId:memberId
+})
+
+})
+.then(res=>res.json())
+.then(data=>{
+
+if(data.success){
+
+document.getElementById("result").innerHTML =
+"✅ Check-in successful for member: " + data.name
+
+}else{
+
+document.getElementById("result").innerHTML =
+"❌ Member not found"
+
+}
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
