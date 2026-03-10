@@ -1,20 +1,126 @@
-const users = require("./utils/users")
-const bcrypt = require("bcrypt")
+require("dotenv").config()
+
+const express = require("express")
+const path = require("path")
+const cors = require("cors")
+const session = require("express-session")
+
+const app = express()
+
+// Routes
+const authRoutes = require("./routes/authRoutes")
+const memberRoutes = require("./routes/memberRoutes")
+const paymentRoutes = require("./routes/paymentRoutes")
+const attendanceRoutes = require("./routes/attendanceRoutes")
+const aiRoutes = require("./routes/aiRoutes")
+
+// Middleware
+const authMiddleware = require("./middleware/authMiddleware")
+
+// -------------------
+// BASIC CONFIG
+// -------------------
+
+app.use(cors())
 
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-app.post("/login", async (req,res)=>{
-  const {username, password} = req.body
+// -------------------
+// SESSION LOGIN
+// -------------------
 
-  const user = users.find(u => u.username === username)
-  if(!user){
-    return res.json({success:false, message:"User not found"})
-  }
+app.use(
+session({
+secret: process.env.SESSION_SECRET,
+resave: false,
+saveUninitialized: false
+})
+)
 
-  const valid = await bcrypt.compare(password, user.password)
-  if(valid){
-    return res.json({success:true, message:"Login successful"})
-  }else{
-    return res.json({success:false, message:"Wrong password"})
-  }
+// -------------------
+// STATIC FILES
+// -------------------
+
+app.use(express.static("public"))
+app.use("/css", express.static("css"))
+app.use("/js", express.static("js"))
+
+// -------------------
+// RECEIPTS ACCESS
+// -------------------
+
+app.use(
+"/receipts",
+express.static(path.join(__dirname, "receipts"))
+)
+
+// -------------------
+// API ROUTES
+// -------------------
+
+app.use("/auth", authRoutes)
+
+app.use("/members", authMiddleware, memberRoutes)
+
+app.use("/payments", authMiddleware, paymentRoutes)
+
+app.use("/attendance", authMiddleware, attendanceRoutes)
+
+app.use("/ai", authMiddleware, aiRoutes)
+
+// -------------------
+// PROTECTED DASHBOARD PAGES
+// -------------------
+
+app.get("/members.html", authMiddleware, (req, res) => {
+res.sendFile(path.join(__dirname, "public", "members.html"))
+})
+
+app.get("/payments.html", authMiddleware, (req, res) => {
+res.sendFile(path.join(__dirname, "public", "payments.html"))
+})
+
+app.get("/attendance.html", authMiddleware, (req, res) => {
+res.sendFile(path.join(__dirname, "public", "attendance.html"))
+})
+
+app.get("/ai.html", authMiddleware, (req, res) => {
+res.sendFile(path.join(__dirname, "public", "ai.html"))
+})
+
+// -------------------
+// ROOT PAGE
+// -------------------
+
+app.get("/", (req, res) => {
+res.sendFile(path.join(__dirname, "public", "login.html"))
+})
+
+// -------------------
+// LOGOUT
+// -------------------
+
+app.get("/logout", (req, res) => {
+
+req.session.destroy(() => {
+
+res.redirect("/login.html")
+
+})
+
+})
+
+// -------------------
+// SERVER START
+// -------------------
+
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+
+console.log("Digitech Fitness System Running")
+
+console.log("Server running on port:", PORT)
+
 })
