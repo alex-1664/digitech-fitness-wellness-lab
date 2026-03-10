@@ -153,3 +153,13 @@ name:member.name
 })
 
 })
+const cron = require("node-cron")
+const checkMembershipExpiry = require("./utils/checkMembershipExpiry")
+
+cron.schedule("0 9 * * *", () => {
+
+console.log("Checking membership expiry...")
+
+checkMembershipExpiry(members)
+
+})
