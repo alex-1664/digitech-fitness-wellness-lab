@@ -3,44 +3,42 @@ digitech-fitness-system/
 ├── server.js                       # Main Express server
 ├── package.json                     # Node.js dependencies & start script
 ├── package-lock.json
-├── .env                             # Environment variables (API keys, ports)
+├── .env                             # Env variables: PORT, MPESA keys, SERVER_URL
 │
-├── public/                          # Frontend (HTML, CSS, JS)
-│   ├── login.html                   # Admin login page
-│   ├── dashboard.html               # Admin dashboard (charts, AI panel placeholder)
-│   ├── members.html                 # Members list page
-│   ├── payments.html                # M-PESA payments page
-│   ├── attendance.html              # Attendance overview page
-│   ├── scan.html                    # QR check-in scanner page
-│   ├── member-card.html             # Printable membership card page
-│   ├── progress.html                # Gym progress tracker placeholder
-│   ├── qrcodes/                     # Generated member QR codes
+├── public/                          # Frontend
+│   ├── login.html
+│   ├── dashboard.html
+│   ├── members.html
+│   ├── payments.html
+│   ├── attendance.html
+│   ├── scan.html
+│   ├── member-card.html
+│   ├── progress.html
+│   ├── qrcodes/
 │   └── assets/
-│       ├── styles/
-│       │   └── style.css            # CSS styling
-│       └── scripts/                 # Optional frontend JS
+│       ├── styles/style.css
+│       └── scripts/
 │
 ├── routes/                          # Express route handlers
-│   ├── authRoutes.js                # Admin login/logout
-│   ├── memberRoutes.js              # Member registration/listing
-│   ├── paymentRoutes.js             # M-PESA payment workflow + receipts
-│   ├── attendanceRoutes.js          # QR check-in + attendance recording
-│   └── progressRoutes.js            # Gym progress tracking
+│   ├── authRoutes.js
+│   ├── memberRoutes.js
+│   ├── paymentRoutes.js
+│   ├── attendanceRoutes.js
+│   └── progressRoutes.js
 │
 ├── utils/                           # Helper functions
-│   ├── generateQR.js                # Generates QR code images
-│   ├── sms.js                       # Sends SMS reminders
-│   ├── renewalReminder.js           # Membership expiry reminder logic
-│   ├── checkMembershipExpiry.js     # Cron job daily check
-│   └── reports.js                   # Revenue & performance reports
+│   ├── generateQR.js
+│   ├── sms.js
+│   ├── renewalReminder.js
+│   ├── checkMembershipExpiry.js
+│   └── reports.js
 │
-├── data/                            # JSON data storage (can later use DB)
-│   ├── members.json                 # Members info + QR + expiry
-│   ├── attendance.json              # Attendance records
-│   └── payments.json                # Payment records + receipts
+├── data/                            # JSON data storage
+│   ├── members.json
+│   ├── attendance.json
+│   └── payments.json
 │
 ├── receipts/                        # Generated PDF receipts
 │   └── receipt-<timestamp>.pdf
-│
 └── logs/
-    └── organize-log.txt             # File organization logs
+    └── organize-log.txt
