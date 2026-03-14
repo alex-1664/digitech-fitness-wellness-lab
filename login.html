@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitech Fitness Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 320px;
+        }
+        .login-box h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            color: #1D4ED8;
+        }
+        .login-box input[type="text"],
+        .login-box input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #1D4ED8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 12px;
+        }
+        .login-box button:hover {
+            background: #2563EB;
+        }
+        .login-box .motto {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>Digitech Login</h1>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div class="motto">Where Sweat Writes Success 💪 | Grind, Grow & Glow</div>
+    </div>
+
+    <script>
+        const form = document.getElementById("loginForm");
+
+        form.addEventListener("submit", function(e){
+            e.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // Temporary: just alert user
+            alert(`Login attempt:\nUsername: ${username}\nPassword: ${password}\n\n(This can be connected to your members database later)`);
+        });
+    </script>
+</body>
+</html>
