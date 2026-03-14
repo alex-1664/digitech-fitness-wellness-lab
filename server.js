@@ -1,5 +1,4 @@
 require("dotenv").config()
-
 const express = require("express")
 const cors = require("cors")
 const bodyParser = require("body-parser")
@@ -8,74 +7,38 @@ const fs = require("fs")
 
 const app = express()
 
-// MIDDLEWARES
+// Middleware
 app.use(cors())
 app.use(bodyParser.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(express.static(path.join(__dirname)))
+app.use(express.static(path.join(__dirname, "public")))
 
-// HOME ROUTE
-app.get("/", (req, res) => {
-  res.send("Digitech Fitness & Wellness Lab Server Running 💪")
+// Routes
+app.use("/auth", require("./routes/authRoutes"))
+app.use("/members", require("./routes/memberRoutes"))
+app.use("/payments", require("./routes/paymentRoutes"))
+app.use("/attendance", require("./routes/attendanceRoutes"))
+app.use("/progress", require("./routes/progressRoutes"))
+
+// Health check and login redirect
+app.get("/", (req, res) => res.send("Digitech Fitness & Wellness Lab Server Running 💪"))
+app.get("/login", (req, res) => res.sendFile(path.join(__dirname, "public", "login.html")))
+
+// Serve receipts publicly
+app.use("/receipts", express.static(path.join(__dirname, "receipts")))
+
+// Ensure JSON data files exist
+const dataFiles = [
+  { path: "./data/members.json", default: [] },
+  { path: "./data/attendance.json", default: [] },
+  { path: "./data/payments.json", default: [] },
+]
+
+dataFiles.forEach(file => {
+  const fullPath = path.join(__dirname, file.path)
+  if (!fs.existsSync(fullPath)) fs.writeFileSync(fullPath, JSON.stringify(file.default, null, 2))
 })
 
-// LOGIN PAGE
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "login.html"))
-})
-
-// MEMBER REGISTRATION
-app.post("/register-member", (req, res) => {
-  const { name, phone, plan } = req.body
-  const membersFile = path.join(__dirname, "members.json")
-  let members = []
-
-  if (fs.existsSync(membersFile)) {
-    members = JSON.parse(fs.readFileSync(membersFile))
-  }
-
-  const member = {
-    id: Date.now(),
-    name,
-    phone,
-    plan,
-    membershipActive: false,
-    expiry: null
-  }
-
-  members.push(member)
-  fs.writeFileSync(membersFile, JSON.stringify(members, null, 2))
-
-  res.json({ message: "Member registered successfully", member })
-})
-
-// PAYMENT REQUEST (MPESA STK PUSH)
-app.post("/pay", (req, res) => {
-  const { phone, amount, memberId } = req.body
-  console.log("Payment Request:", { phone, amount, memberId })
-  res.json({ message: "Payment request received", phone, amount, memberId })
-})
-
-// MPESA CALLBACK
-app.post("/callback", (req, res) => {
-  console.log("MPESA CALLBACK RECEIVED")
-  console.log(JSON.stringify(req.body, null, 2))
-  res.sendStatus(200)
-})
-
-// RECEIPTS DOWNLOAD
-app.get("/receipts/:id", (req, res) => {
-  const receiptId = req.params.id
-  const receiptPath = path.join(__dirname, "receipts", `${receiptId}.pdf`)
-  if (fs.existsSync(receiptPath)) {
-    res.sendFile(receiptPath)
-  } else {
-    res.status(404).json({ message: "Receipt not found" })
-  }
-})
-
-// START SERVER
+// Start server
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Digitech Fitness Server running on port ${PORT}`)
-})
+app.listen(PORT, () => console.log(`Digitech Fitness Server running on port ${PORT}`))
