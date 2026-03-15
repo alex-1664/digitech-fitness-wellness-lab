@@ -1,34 +1,21 @@
-{
-  "name": "digitech-fitness-system",
-  "version": "1.0.0",
-  "description": "Digitech Fitness & Wellness Lab Gym Management System",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "keywords": [
-    "gym",
-    "fitness",
-    "management",
-    "mpesa",
-    "qr",
-    "attendance"
-  ],
-  "author": "Digitech Fitness & Wellness Lab",
-  "license": "ISC",
-  "dependencies": {
-    "axios": "^1.6.7",
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.18.2",
-    "qrcode": "^1.5.4"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.3"
-  },
-  "engines": {
-    "node": ">=18"
-  }
-}
+digitech-fitness-system/
+│
+├── package.json
+├── server.js
+│
+├── src/
+│   ├── routes/
+│   │   ├── memberRoutes.js
+│   │   ├── attendanceRoutes.js
+│   │   └── dashboardRoutes.js
+│   │
+│   └── utils/
+│       └── generateQR.js
+│
+├── public/
+│   ├── dashboard.html
+│   ├── scan.html
+│   ├── member-card.html
+│   └── uploads/
+│       ├── member1.jpg
+│       └── member2.jpg
