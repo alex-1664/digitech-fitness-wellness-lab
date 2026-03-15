@@ -1,28 +1,35 @@
 const express = require("express")
 const router = express.Router()
-let { members } = require("../data/members.json")
-let attendanceRecords = require("../data/attendance.json")
+const fs = require("fs")
+const path = require("path")
 
-// QR Check-in
-router.post("/checkin", (req,res)=>{
-  const { memberId } = req.body
-  const member = members.find(m => m.id === memberId)
-  if(!member) return res.json({success:false})
+const attendanceFile = path.join(__dirname,"../data/attendance.json")
 
-  const attendance = {
-    memberId,
-    name: member.name,
-    date: new Date()
-  }
-  attendanceRecords.push(attendance)
-
-  // Optionally save to JSON file if using file system
-  // fs.writeFileSync("./data/attendance.json", JSON.stringify(attendanceRecords,null,2))
-
-  res.json({success:true, name: member.name})
+router.get("/",(req,res)=>{
+  const data = JSON.parse(fs.readFileSync(attendanceFile))
+  res.json(data)
 })
 
-// Get all attendance
-router.get("/", (req,res)=> res.json(attendanceRecords))
+router.post("/scan",(req,res)=>{
+
+  const {memberId} = req.body
+
+  let attendance = JSON.parse(fs.readFileSync(attendanceFile))
+
+  const record = {
+    id:Date.now(),
+    memberId,
+    time:new Date()
+  }
+
+  attendance.push(record)
+
+  fs.writeFileSync(attendanceFile,JSON.stringify(attendance,null,2))
+
+  res.json({
+    message:`Attendance recorded for ${memberId}`
+  })
+
+})
 
 module.exports = router
