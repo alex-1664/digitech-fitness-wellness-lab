@@ -5,8 +5,7 @@ let attendance = [];
 
 router.post("/checkin", (req, res) => {
   const { memberId } = req.body;
-  const memberExists = memberId ? true : false; // Replace with real DB check
-  if (!memberExists) return res.json({ success: false });
+  if (!memberId) return res.json({ success: false });
 
   const record = { memberId, time: new Date(), name: memberId };
   attendance.push(record);
