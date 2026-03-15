@@ -1,39 +1,44 @@
 const express = require("express")
 const router = express.Router()
-const axios = require("axios")
-let { members } = require("../data/members.json")
-let payments = require("../data/payments.json")
-const path = require("path")
 const fs = require("fs")
+const path = require("path")
 
-// M-PESA STK Push simulation
-router.post("/pay", async (req,res)=>{
-  const { memberId, amount } = req.body
-  const member = members.find(m => m.id === memberId)
-  if(!member) return res.json({success:false, msg:"Member not found"})
+const paymentsFile = path.join(__dirname,"../data/payments.json")
+const receiptsFolder = path.join(__dirname,"../receipts")
 
-  // Here you would call Safaricom STK API using axios
-  // For demo, we simulate success
-  const payment = {
+router.post("/pay",(req,res)=>{
+
+  const {memberId,phone,amount} = req.body
+
+  const paymentId = Date.now()
+
+  let payments = JSON.parse(fs.readFileSync(paymentsFile))
+
+  payments.push({
+    id:paymentId,
     memberId,
-    name: member.name,
+    phone,
     amount,
-    date: new Date(),
-    receipt: `receipt-${Date.now()}.pdf`
-  }
+    status:"paid",
+    time:new Date()
+  })
 
-  payments.push(payment)
+  fs.writeFileSync(paymentsFile,JSON.stringify(payments,null,2))
 
-  // Simulate receipt PDF creation
-  fs.writeFileSync(path.join(__dirname,"../receipts",payment.receipt),`Receipt\nMember: ${member.name}\nAmount: ${amount}\nDate: ${payment.date}`)
+  const receiptPath = path.join(receiptsFolder,`DG${paymentId}.pdf`)
 
-  // Optionally save payments to JSON file
-  // fs.writeFileSync("./data/payments.json", JSON.stringify(payments,null,2))
+  fs.writeFileSync(receiptPath,
+`Digitech Fitness Receipt
+Member ID: ${memberId}
+Amount: ${amount}
+Date: ${new Date()}
+`)
 
-  res.json({success:true, payment})
+  res.json({
+    message:"Payment recorded",
+    receipt:`/receipts/DG${paymentId}.pdf`
+  })
+
 })
-
-// Get all payments
-router.get("/", (req,res)=> res.json(payments))
 
 module.exports = router
