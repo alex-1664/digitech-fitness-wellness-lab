@@ -1,47 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>QR Check-In</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+<h2>QR Check-In</h2>
+<div id="reader" style="width:300px;margin:auto;"></div>
+<div id="result"></div>
+<button onclick="startScanner()">Start Scanner</button>
+
 <script>
-
-let scanner
-
+let scanner;
 function startScanner(){
-
-  scanner = new Html5Qrcode("reader")
-
+  scanner = new Html5Qrcode("reader");
   scanner.start(
     { facingMode: "environment" },
     { fps:10, qrbox:250 },
-
     function(decodedText){
-
-      // Extract member ID
-      let memberId = decodedText.includes(":")
-        ? decodedText.split(":")[1]
-        : decodedText
-
-      document.getElementById("result").innerText =
-        "Scanning member: " + memberId
+      let memberId = decodedText.includes(":") ? decodedText.split(":")[1] : decodedText;
 
       fetch("/attendance/checkin",{
         method:"POST",
         headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ memberId: memberId })
+        body: JSON.stringify({ memberId })
       })
       .then(res=>res.json())
       .then(data=>{
-
-        document.getElementById("result").innerText =
-          data.success
-          ? "✅ " + data.name + " Checked-In"
-          : "❌ Member not found"
-
-      })
-
+        document.getElementById("result").innerText = data.success ? `✅ ${data.name} Checked-In` : "❌ Member not found";
+      });
     },
-
-    function(err){
-      console.log(err)
-    }
-
-  )
+    function(err){ console.log(err); }
+  );
 }
-
 </script>
+</body>
+</html>
