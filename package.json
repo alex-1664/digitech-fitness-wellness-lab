@@ -1,7 +1,7 @@
 {
   "name": "digitech-fitness-system",
   "version": "1.0.0",
-  "description": "Digitech Fitness & Wellness Lab System",
+  "description": "Digitech Fitness & Wellness Lab System with QR, scanner, dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -13,5 +13,7 @@
   },
   "engines": {
     "node": "20.x"
-  }
+  },
+  "author": "Alexander Kiio",
+  "license": "MIT"
 }
