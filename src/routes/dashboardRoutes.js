@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+// Mock dashboard data
 router.get("/", (req, res) => {
   const stats = {
     members: 120,
