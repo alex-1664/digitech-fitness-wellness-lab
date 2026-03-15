@@ -1,34 +1,30 @@
-require("dotenv").config()
-const express = require("express")
-const cors = require("cors")
-const bodyParser = require("body-parser")
-const path = require("path")
-const fs = require("fs")
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
 
-const app = express()
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(cors())
-app.use(bodyParser.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(express.static(path.join(__dirname, "public")))
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
-app.use("/members", require("./routes/memberRoutes"))
-app.use("/payments", require("./routes/paymentRoutes"))
-app.use("/attendance", require("./routes/attendanceRoutes"))
+const memberRoutes = require("./src/routes/memberRoutes");
+const attendanceRoutes = require("./src/routes/attendanceRoutes");
+const dashboardRoutes = require("./src/routes/dashboardRoutes");
 
-app.get("/", (req,res)=>{
-  res.send("Digitech Fitness & Wellness Lab Server Running 💪")
-})
+app.use("/api/members", memberRoutes);
+app.use("/attendance", attendanceRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
-app.get("/login",(req,res)=>{
-  res.sendFile(path.join(__dirname,"public","login.html"))
-})
+// Root
+app.get("/", (req, res) => {
+  res.send("Digitech Fitness & Wellness Lab Server Running");
+});
 
-app.use("/receipts", express.static(path.join(__dirname,"receipts")))
-
-const PORT = process.env.PORT || 3000
-
-app.listen(PORT,()=>{
-  console.log("Digitech Fitness Server running on port " + PORT)
-})
+// Start server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
