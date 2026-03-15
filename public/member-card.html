@@ -1,74 +1,36 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<title>Digitech Fitness Membership Card</title>
-
+<title>Member Card</title>
 <style>
-
-body{
-font-family:Arial;
-background:#f4f6f9;
-text-align:center;
-}
-
-.card{
-
-width:350px;
-border:2px solid #000;
-padding:20px;
-margin:auto;
-background:white;
-border-radius:10px;
-
-}
-
-img{
-width:120px;
-}
-
-button{
-margin-top:20px;
-padding:10px 20px;
-}
-
+body{ font-family: Arial; text-align:center; background:#f4f4f4; }
+.card{ width:320px; margin:auto; padding:20px; background:white; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.2); }
+.photo{ width:100px; height:100px; border-radius:50%; object-fit:cover; }
+.qr{ margin-top:10px; }
 </style>
-
 </head>
-
 <body>
-
-<h2>Digitech Fitness & Wellness Lab</h2>
-
 <div class="card">
-
+<h2>DIGITECH FITNESS</h2>
+<img id="photo" class="photo" src="" />
 <h3 id="name"></h3>
-
-<p id="memberId"></p>
-
-<img id="qr">
-
+<p>ID: <span id="memberId"></span></p>
+<p>Expires: <span id="expiry"></span></p>
+<img id="qr" class="qr" width="150"/>
 </div>
 
-<button onclick="window.print()">Print Card</button>
-
 <script>
-
-const params = new URLSearchParams(window.location.search)
-
-const name = params.get("name")
-
-const id = params.get("id")
-
-const qr = params.get("qr")
-
-document.getElementById("name").innerText = name
-document.getElementById("memberId").innerText = "Member ID: " + id
-document.getElementById("qr").src = qr
-
+const params = new URLSearchParams(window.location.search);
+const memberId = params.get("id");
+fetch("/api/members/" + memberId)
+.then(res => res.json())
+.then(member => {
+  document.getElementById("name").innerText = member.name;
+  document.getElementById("memberId").innerText = member.memberId;
+  document.getElementById("expiry").innerText = member.expiry;
+  document.getElementById("photo").src = member.photo;
+  document.getElementById("qr").src = member.qrCode;
+});
 </script>
-
 </body>
-
 </html>
