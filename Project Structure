@@ -1,28 +1,44 @@
-digitech-fitness-system
+digitech-fitness-system/
 │
-├── server.js
-├── package.json
+├── server.js                       # Main Express server
+├── package.json                     # Node.js dependencies & start script
+├── package-lock.json
+├── .env                             # Env variables: PORT, MPESA keys, SERVER_URL
 │
-├── routes
-│   ├── memberRoutes.js
-│   ├── paymentRoutes.js
-│   └── attendanceRoutes.js
-│
-├── utils
-│   └── generateQR.js
-│
-├── public
+├── public/                          # Frontend
 │   ├── login.html
 │   ├── dashboard.html
 │   ├── members.html
 │   ├── payments.html
 │   ├── attendance.html
 │   ├── scan.html
-│   └── qrcodes
+│   ├── member-card.html
+│   ├── progress.html
+│   ├── qrcodes/
+│   └── assets/
+│       ├── styles/style.css
+│       └── scripts/
 │
-├── data
+├── routes/                          # Express route handlers
+│   ├── authRoutes.js
+│   ├── memberRoutes.js
+│   ├── paymentRoutes.js
+│   ├── attendanceRoutes.js
+│   └── progressRoutes.js
+│
+├── utils/                           # Helper functions
+│   ├── generateQR.js
+│   ├── sms.js
+│   ├── renewalReminder.js
+│   ├── checkMembershipExpiry.js
+│   └── reports.js
+│
+├── data/                            # JSON data storage
 │   ├── members.json
-│   ├── payments.json
-│   └── attendance.json
+│   ├── attendance.json
+│   └── payments.json
 │
-└── receipts
+├── receipts/                        # Generated PDF receipts
+│   └── receipt-<timestamp>.pdf
+└── logs/
+    └── organize-log.txt
