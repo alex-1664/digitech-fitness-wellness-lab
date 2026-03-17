@@ -1,20 +1,16 @@
 const express = require("express");
 const router = express.Router();
+const pool = require("../models/db");
 
-let attendance = [];
-
-router.post("/checkin", (req, res) => {
+router.post("/checkin", async (req,res)=>{
   const { memberId } = req.body;
-  if (!memberId) return res.json({ success: false });
 
-  const record = { memberId, time: new Date(), name: memberId };
-  attendance.push(record);
+  await pool.query(
+    "INSERT INTO attendance(member_id) VALUES($1)",
+    [memberId]
+  );
 
-  res.json({ success: true, name: memberId });
-});
-
-router.get("/records", (req, res) => {
-  res.json(attendance);
+  res.json({success:true, name:memberId});
 });
 
 module.exports = router;
