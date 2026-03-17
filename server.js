@@ -1,7 +1,10 @@
 require("dotenv").config();
 const express = require("express");
+const session = require("express-session");
 const cors = require("cors");
 const path = require("path");
+
+const { createDefaultAdmin, findAdmin, verifyPassword } = require("./src/models/adminModel");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,21 +13,49 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
 
-// Routes
-const memberRoutes = require("./src/routes/memberRoutes");
-const attendanceRoutes = require("./src/routes/attendanceRoutes");
-const dashboardRoutes = require("./src/routes/dashboardRoutes");
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
 
-app.use("/api/members", memberRoutes);
-app.use("/attendance", attendanceRoutes);
-app.use("/api/dashboard", dashboardRoutes);
+app.use(express.static("public"));
 
-// Root
-app.get("/", (req, res) => {
-  res.send("Digitech Fitness & Wellness Lab Server Running");
+// Create default admin
+createDefaultAdmin();
+
+// LOGIN
+app.post("/login", async (req,res)=>{
+  const { username, password } = req.body;
+  const admin = await findAdmin(username);
+
+  if(!admin) return res.json({success:false, message:"User not found"});
+
+  const valid = await verifyPassword(admin, password);
+  if(!valid) return res.json({success:false, message:"Wrong password"});
+
+  req.session.admin = admin.username;
+  res.json({success:true});
 });
 
-// Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// AUTH MIDDLEWARE
+function requireAdmin(req,res,next){
+  if(req.session.admin) return next();
+  res.redirect("/login.html");
+}
+
+// PROTECTED PAGES
+app.use("/dashboard.html", requireAdmin);
+app.use("/scan.html", requireAdmin);
+
+// ROUTES
+app.use("/api/members", require("./src/routes/memberRoutes"));
+app.use("/attendance", require("./src/routes/attendanceRoutes"));
+app.use("/api/dashboard", require("./src/routes/dashboardRoutes"));
+
+// ROOT
+app.get("/", (req,res)=> res.redirect("/login.html"));
+
+// START SERVER
+app.listen(PORT, ()=> console.log("Server running on port " + PORT));
