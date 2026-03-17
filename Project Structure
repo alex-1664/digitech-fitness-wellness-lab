@@ -2,11 +2,19 @@ digitech-fitness-system/
 │
 ├── package.json
 ├── server.js
-├── .env (set locally, Render uses environment variables)
+├── .env (optional locally; use Render environment variables)
+├── public/
+│   ├── login.html
+│   ├── dashboard.html
+│   ├── scan.html
+│   ├── admin.html
+│   ├── css/ (optional)
+│   └── js/ (optional)
 └── src/
     ├── models/
     │   └── db.js
     └── routes/
         ├── memberRoutes.js
         ├── attendanceRoutes.js
-        └── dashboardRoutes.js
+        ├── dashboardRoutes.js
+        └── adminRoutes.js
