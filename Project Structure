@@ -2,20 +2,11 @@ digitech-fitness-system/
 │
 ├── package.json
 ├── server.js
-│
-├── src/
-│   ├── routes/
-│   │   ├── memberRoutes.js
-│   │   ├── attendanceRoutes.js
-│   │   └── dashboardRoutes.js
-│   │
-│   └── utils/
-│       └── generateQR.js
-│
-├── public/
-│   ├── dashboard.html
-│   ├── scan.html
-│   ├── member-card.html
-│   └── uploads/
-│       ├── member1.jpg
-│       └── member2.jpg
+├── .env (set locally, Render uses environment variables)
+└── src/
+    ├── models/
+    │   └── db.js
+    └── routes/
+        ├── memberRoutes.js
+        ├── attendanceRoutes.js
+        └── dashboardRoutes.js
