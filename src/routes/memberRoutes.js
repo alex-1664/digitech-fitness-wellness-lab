@@ -1,21 +1,29 @@
 const express = require("express");
 const router = express.Router();
-const generateQR = require("../utils/generateQR");
+const pool = require("../models/db");
+const QRCode = require("qrcode");
 
-// Mock member database
-let members = [
-  { memberId: "DFL1023", name: "John Doe", photo: "/uploads/member1.jpg", expiry: "2026-12-31" },
-  { memberId: "DFL1024", name: "Jane Smith", photo: "/uploads/member2.jpg", expiry: "2026-12-31" }
-];
+// Get member
+router.get("/:id", async (req,res)=>{
+  const result = await pool.query("SELECT * FROM members WHERE member_id=$1",[req.params.id]);
+  const member = result.rows[0];
 
-router.get("/:id", async (req, res) => {
-  const memberId = req.params.id;
-  const member = members.find(m => m.memberId === memberId);
+  if(!member) return res.status(404).json({error:"Not found"});
 
-  if (!member) return res.status(404).json({ error: "Member not found" });
+  const qr = await QRCode.toDataURL("DIGITECH_MEMBER:"+member.member_id);
+  res.json({...member, qrCode: qr});
+});
 
-  const qrCode = await generateQR(`DIGITECH_MEMBER:${memberId}`);
-  res.json({ ...member, qrCode });
+// Add member
+router.post("/add", async (req,res)=>{
+  const { memberId, name, photo, expiry } = req.body;
+
+  await pool.query(
+    "INSERT INTO members(member_id,name,photo,expiry) VALUES($1,$2,$3,$4)",
+    [memberId,name,photo,expiry]
+  );
+
+  res.json({success:true});
 });
 
 module.exports = router;
