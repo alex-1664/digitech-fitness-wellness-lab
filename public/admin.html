@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Admins</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: auto; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    input, button { padding: 6px; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <h2>Admin Management</h2>
+
+  <h3>Add New Admin</h3>
+  <input type="text" id="newUsername" placeholder="Username">
+  <input type="password" id="newPassword" placeholder="Password">
+  <button onclick="addAdmin()">Add Admin</button>
+
+  <h3>Existing Admins</h3>
+  <table id="adminsTable">
+    <thead>
+      <tr><th>ID</th><th>Username</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+<script>
+async function fetchAdmins() {
+  const res = await fetch("/api/admins");
+  const data = await res.json();
+  const tbody = document.querySelector("#adminsTable tbody");
+  tbody.innerHTML = "";
+  data.admins.forEach(a => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${a.id}</td>
+        <td>${a.username}</td>
+        <td>
+          <button onclick="updateAdmin(${a.id})">Change Password</button>
+          <button onclick="deleteAdmin(${a.id})">Delete</button>
+        </td>
+      </tr>`;
+  });
+}
+
+async function addAdmin() {
+  const username = document.getElementById("newUsername").value;
+  const password = document.getElementById("newPassword").value;
+  if(!username || !password) return alert("Fill both fields");
+
+  const res = await fetch("/api/admins/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  if(data.success) {
+    fetchAdmins();
+    document.getElementById("newUsername").value = "";
+    document.getElementById("newPassword").value = "";
+  } else alert(data.error);
+}
+
+async function updateAdmin(id) {
+  const password = prompt("Enter new password:");
+  if(!password) return;
+  const res = await fetch("/api/admins/update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, password })
+  });
+  const data = await res.json();
+  if(data.success) fetchAdmins();
+  else alert(data.error);
+}
+
+async function deleteAdmin(id) {
+  if(!confirm("Delete this admin?")) return;
+  const res = await fetch("/api/admins/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })
+  });
+  const data = await res.json();
+  if(data.success) fetchAdmins();
+  else alert(data.error);
+}
+
+// Load admins on page load
+fetchAdmins();
+</script>
+</body>
+</html>
