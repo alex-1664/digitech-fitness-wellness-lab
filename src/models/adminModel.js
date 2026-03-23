@@ -1,21 +1,26 @@
-const pool = require("./db");
 const bcrypt = require("bcrypt");
 
-async function createDefaultAdmin(){
-  const res = await pool.query("SELECT * FROM admins WHERE username=$1", ["admin"]);
-  if(res.rows.length === 0){
+let adminUser = null;
+
+async function createDefaultAdmin() {
+  if (!adminUser) {
     const hash = await bcrypt.hash("password123", 10);
-    await pool.query("INSERT INTO admins(username,password) VALUES($1,$2)", ["admin", hash]);
+    adminUser = {
+      username: "admin",
+      password: hash
+    };
     console.log("✅ Default admin created: admin / password123");
   }
 }
 
-async function findAdmin(username){
-  const res = await pool.query("SELECT * FROM admins WHERE username=$1",[username]);
-  return res.rows[0];
+async function findAdmin(username) {
+  if (adminUser && adminUser.username === username) {
+    return adminUser;
+  }
+  return null;
 }
 
-async function verifyPassword(admin, password){
+async function verifyPassword(admin, password) {
   return await bcrypt.compare(password, admin.password);
 }
 
