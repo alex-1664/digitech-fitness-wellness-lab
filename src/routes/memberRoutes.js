@@ -1,34 +1,49 @@
-// src/routes/memberRoutes.js
 const express = require("express");
 const router = express.Router();
 const pool = require("../models/db");
 const QRCode = require("qrcode");
 
-// Get member info + QR code
-router.get("/:id", async (req, res) => {
+// =====================
+// CREATE MEMBER
+// =====================
+router.post("/add", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM members WHERE member_id=$1", [req.params.id]);
-    const member = result.rows[0];
-    if (!member) return res.status(404).json({ error: "Not found" });
+    const { name, phone, membership } = req.body;
 
-    const qr = await QRCode.toDataURL("DIGITECH_MEMBER:" + member.member_id);
-    res.json({ ...member, qrCode: qr });
+    // Insert member into DB
+    const result = await pool.query(
+      "INSERT INTO members(name, phone, membership) VALUES($1,$2,$3) RETURNING *",
+      [name, phone, membership]
+    );
+
+    const member = result.rows[0];
+
+    // Generate QR code (contains member ID)
+    const qrData = `MEMBER:${member.id}`;
+
+    const qrCodeImage = await QRCode.toDataURL(qrData);
+
+    res.json({
+      success: true,
+      member,
+      qr: qrCodeImage
+    });
+
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    console.error(err);
+    res.status(500).json({ success: false, message: "Error adding member" });
   }
 });
 
-// Add new member
-router.post("/add", async (req, res) => {
-  const { memberId, name, photo, expiry } = req.body;
+// =====================
+// GET ALL MEMBERS
+// =====================
+router.get("/", async (req, res) => {
   try {
-    await pool.query(
-      "INSERT INTO members(member_id,name,photo,expiry) VALUES($1,$2,$3,$4)",
-      [memberId, name, photo, expiry]
-    );
-    res.json({ success: true });
+    const result = await pool.query("SELECT * FROM members ORDER BY id DESC");
+    res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false });
   }
 });
 
