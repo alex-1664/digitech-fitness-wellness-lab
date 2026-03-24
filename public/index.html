@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Digitech Fitness System</title>
+</head>
+<body>
+
+  <h2>🏋️ Digitech Fitness - Members</h2>
+
+  <h3>Add Member</h3>
+
+  <form id="memberForm">
+    <input type="text" id="name" placeholder="Name" required><br><br>
+    <input type="text" id="phone" placeholder="Phone" required><br><br>
+    <input type="text" id="membership" placeholder="Membership Type" required><br><br>
+
+    <button type="submit">Add Member</button>
+  </form>
+
+  <h3>Members List</h3>
+  <ul id="membersList"></ul>
+
+  <script>
+    const API = "/members";
+
+    // Add member
+    document.getElementById("memberForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        membership: document.getElementById("membership").value
+      };
+
+      await fetch(API + "/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+      alert("Member added!");
+      loadMembers();
+    });
+
+    // Load members
+    async function loadMembers() {
+      const res = await fetch(API);
+      const members = await res.json();
+
+      const list = document.getElementById("membersList");
+      list.innerHTML = "";
+
+      members.forEach(m => {
+        const li = document.createElement("li");
+        li.textContent = `${m.name} - ${m.phone} - ${m.membership}`;
+        list.appendChild(li);
+      });
+    }
+
+    loadMembers();
+  </script>
+
+</body>
+</html>
