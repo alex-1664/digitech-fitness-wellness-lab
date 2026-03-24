@@ -5,6 +5,10 @@ const session = require("express-session");
 const cors = require("cors");
 const path = require("path");
 
+// PostgreSQL session store
+const pgSession = require("connect-pg-simple")(session);
+const pool = require("./src/models/db");
+
 const { createDefaultAdmin, findAdmin, verifyPassword } = require("./src/models/adminModel");
 
 const app = express();
@@ -17,10 +21,18 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Session middleware (PostgreSQL store)
 app.use(session({
+  store: new pgSession({
+    pool: pool,
+    tableName: "session"
+  }),
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    secure: false // set true if using HTTPS
+  }
 }));
 
 // Serve static files
