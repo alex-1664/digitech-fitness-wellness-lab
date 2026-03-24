@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session with PostgreSQL
+// Session (PostgreSQL)
 app.use(session({
   store: new pgSession({
     pool: pool,
@@ -35,7 +35,7 @@ app.use(session({
 // Static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Initialize admin
+// Create default admin
 createDefaultAdmin();
 
 // LOGIN
@@ -79,18 +79,18 @@ app.use("/scan.html", requireAdmin);
 app.use("/members.html", requireAdmin);
 app.use("/admin.html", requireAdmin);
 
-// API ROUTES
+// API routes
 app.use("/api/members", require("./src/routes/memberRoutes"));
 app.use("/attendance", require("./src/routes/attendanceRoutes"));
 app.use("/api/dashboard", require("./src/routes/dashboardRoutes"));
 app.use("/api/admin", require("./src/routes/adminRoutes"));
 
-// ROOT
+// Root
 app.get("/", (req, res) => {
   res.redirect("/login.html");
 });
 
-// START SERVER
+// Start server
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
