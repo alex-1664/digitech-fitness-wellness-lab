@@ -5,7 +5,6 @@ const session = require("express-session");
 const cors = require("cors");
 const path = require("path");
 
-// PostgreSQL session store
 const pgSession = require("connect-pg-simple")(session);
 const pool = require("./src/models/db");
 
@@ -14,14 +13,12 @@ const { createDefaultAdmin, findAdmin, verifyPassword } = require("./src/models/
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// =====================
 // Middleware
-// =====================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session middleware (PostgreSQL store)
+// Session with PostgreSQL
 app.use(session({
   store: new pgSession({
     pool: pool,
@@ -31,21 +28,17 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false // set true if using HTTPS
+    secure: false
   }
 }));
 
-// Serve static files
+// Static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// =====================
-// Initialize Admin
-// =====================
+// Initialize admin
 createDefaultAdmin();
 
-// =====================
-// LOGIN ROUTE
-// =====================
+// LOGIN
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -66,20 +59,18 @@ app.post("/login", async (req, res) => {
 
     res.json({ success: true });
 
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 });
 
-// =====================
 // AUTH MIDDLEWARE
-// =====================
 function requireAdmin(req, res, next) {
   if (req.session.admin) {
     return next();
   }
-  return res.redirect("/login.html");
+  res.redirect("/login.html");
 }
 
 // Protect pages
@@ -88,24 +79,18 @@ app.use("/scan.html", requireAdmin);
 app.use("/members.html", requireAdmin);
 app.use("/admin.html", requireAdmin);
 
-// =====================
 // API ROUTES
-// =====================
 app.use("/api/members", require("./src/routes/memberRoutes"));
 app.use("/attendance", require("./src/routes/attendanceRoutes"));
 app.use("/api/dashboard", require("./src/routes/dashboardRoutes"));
 app.use("/api/admin", require("./src/routes/adminRoutes"));
 
-// =====================
-// ROOT ROUTE
-// =====================
+// ROOT
 app.get("/", (req, res) => {
   res.redirect("/login.html");
 });
 
-// =====================
 // START SERVER
-// =====================
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
