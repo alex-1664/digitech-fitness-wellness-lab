@@ -1,34 +1,130 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard</title>
-<style>
-body{ font-family: Arial; background:#f4f4f4; }
-.container{ width:90%; margin:auto; }
-.cards{ display:grid; grid-template-columns: repeat(4,1fr); gap:20px; margin-top:40px; }
-.card{ background:white; padding:20px; border-radius:10px; text-align:center; box-shadow:0 0 8px rgba(0,0,0,0.2); }
-.number{ font-size:30px; font-weight:bold; margin-top:10px; }
-</style>
+  <title>Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(to right, #1e3a8a, #2563eb);
+      color: white;
+      padding: 20px;
+    }
+
+    .cards {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      flex: 1;
+      min-width: 200px;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    table {
+      width: 100%;
+      background: white;
+      color: black;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+
+    th {
+      background: #2563eb;
+      color: white;
+    }
+
+    th, td {
+      padding: 10px;
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
-<h1>Digitech Fitness Dashboard</h1>
+
+<h1>💪 Gym Dashboard</h1>
+
 <div class="cards">
-<div class="card"><h3>Total Members</h3><div id="members" class="number">0</div></div>
-<div class="card"><h3>Today Check-ins</h3><div id="checkins" class="number">0</div></div>
-<div class="card"><h3>Monthly Revenue</h3><div id="revenue" class="number">0</div></div>
-<div class="card"><h3>Expiring Soon</h3><div id="expiry" class="number">0</div></div>
+  <div class="card">
+    <h2 id="members"></h2>
+    <p>Total Members</p>
+  </div>
+
+  <div class="card">
+    <h2 id="registration"></h2>
+    <p>Registration (Ksh)</p>
+  </div>
+
+  <div class="card">
+    <h2 id="gym"></h2>
+    <p>Gym Revenue (Ksh)</p>
+  </div>
 </div>
-</div>
+
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Phone</th>
+  <th>Membership</th>
+  <th>Expiry</th>
+  <th>Total Paid</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+
 <script>
-fetch("/api/dashboard")
-.then(res=>res.json())
-.then(data=>{
-  document.getElementById("members").innerText = data.members;
-  document.getElementById("checkins").innerText = data.checkins;
-  document.getElementById("revenue").innerText = "KES " + data.revenue;
-  document.getElementById("expiry").innerText = data.expiring;
-});
+async function load() {
+
+  const membersRes = await fetch("http://localhost:5000/members");
+  const members = await membersRes.json();
+
+  const paymentsRes = await fetch("http://localhost:5000/payments");
+  const payments = await paymentsRes.json();
+
+  let reg = 0;
+  let gym = 0;
+
+  payments.forEach(p => {
+    if (p.type === "registration") reg += p.amount;
+    if (p.type === "membership") gym += p.amount;
+  });
+
+  document.getElementById("members").innerText = members.length;
+  document.getElementById("registration").innerText = reg;
+  document.getElementById("gym").innerText = gym;
+
+  const table = document.getElementById("table");
+  table.innerHTML = "";
+
+  members.forEach(m => {
+    table.innerHTML += `
+      <tr>
+        <td>${m.name}</td>
+        <td>${m.phone}</td>
+        <td>${m.membership}</td>
+        <td>${m.expiry_date?.split("T")[0]}</td>
+        <td>${m.total_gym_paid}</td>
+      </tr>
+    `;
+  });
+}
+
+load();
 </script>
+
 </body>
 </html>
