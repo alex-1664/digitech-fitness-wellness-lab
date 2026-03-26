@@ -1,50 +1,119 @@
-require("dotenv").config();
-
 const express = require("express");
-const session = require("express-session");
-const pgSession = require("connect-pg-simple")(session);
 const cors = require("cors");
-const path = require("path");
-
-const pool = require("./src/models/db");
+const { Pool } = require("pg");
 
 const app = express();
-
-// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Session (PostgreSQL)
-app.use(
-  session({
-    store: new pgSession({
-      pool: pool
-    }),
-    secret: "supersecretkey",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24
+const pool = new Pool({
+  user: "postgres",
+  host: "localhost",
+  database: "gym",
+  password: "password",
+  port: 5432
+});
+
+const REG_FEE = 400;
+
+// 👉 ADD / PAY MEMBER
+app.post("/add", async (req, res) => {
+  const { name, phone, membership, amount } = req.body;
+
+  try {
+    const check = await pool.query(
+      "SELECT * FROM members WHERE phone=$1",
+      [phone]
+    );
+
+    let member;
+    let gymAmount = 0;
+
+    // 🆕 NEW MEMBER
+    if (check.rows.length === 0) {
+
+      if (amount < REG_FEE) {
+        return res.json({
+          success: false,
+          message: "Registration fee is Ksh 400 ❌"
+        });
+      }
+
+      gymAmount = amount - REG_FEE;
+
+      // expiry
+      let expiry = new Date();
+      if (membership === "Daily") expiry.setDate(expiry.getDate() + 1);
+      if (membership === "Weekly") expiry.setDate(expiry.getDate() + 7);
+      if (membership === "Monthly") expiry.setDate(expiry.getDate() + 30);
+
+      const result = await pool.query(
+        `INSERT INTO members(name, phone, membership, registration_paid, total_gym_paid, expiry_date)
+         VALUES($1,$2,$3,true,$4,$5) RETURNING *`,
+        [name, phone, membership, gymAmount, expiry]
+      );
+
+      member = result.rows[0];
+
+      // 💰 Save registration
+      await pool.query(
+        `INSERT INTO payments(member_id, amount, type)
+         VALUES($1,$2,'registration')`,
+        [member.id, REG_FEE]
+      );
+
+      // 💰 Save gym
+      if (gymAmount > 0) {
+        await pool.query(
+          `INSERT INTO payments(member_id, amount, type, membership_type)
+           VALUES($1,$2,'membership',$3)`,
+          [member.id, gymAmount, membership]
+        );
+      }
+
+    } else {
+      // 🔁 EXISTING MEMBER
+      member = check.rows[0];
+
+      let expiry = new Date(member.expiry_date || new Date());
+      if (membership === "Daily") expiry.setDate(expiry.getDate() + 1);
+      if (membership === "Weekly") expiry.setDate(expiry.getDate() + 7);
+      if (membership === "Monthly") expiry.setDate(expiry.getDate() + 30);
+
+      await pool.query(
+        `UPDATE members 
+         SET total_gym_paid = total_gym_paid + $1,
+             membership = $2,
+             expiry_date = $3
+         WHERE id = $4`,
+        [amount, membership, expiry, member.id]
+      );
+
+      await pool.query(
+        `INSERT INTO payments(member_id, amount, type, membership_type)
+         VALUES($1,$2,'membership',$3)`,
+        [member.id, amount, membership]
+      );
     }
-  })
-);
 
-// Routes
-const memberRoutes = require("./src/routes/memberRoutes");
-app.use("/members", memberRoutes);
+    res.json({ success: true, member });
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, "public")));
-
-// Default route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Start server
-const PORT = process.env.PORT || 10000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// 👉 GET MEMBERS
+app.get("/members", async (req, res) => {
+  const result = await pool.query("SELECT * FROM members ORDER BY id DESC");
+  res.json(result.rows);
 });
+
+// 👉 GET PAYMENTS
+app.get("/payments", async (req, res) => {
+  const result = await pool.query("SELECT * FROM payments");
+  res.json(result.rows);
+});
+
+app.listen(5000, () => console.log("Server running on port 5000"));
