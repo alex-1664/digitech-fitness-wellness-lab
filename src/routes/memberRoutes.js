@@ -1,43 +1,34 @@
-const express = require("express");
-const router = express.Router();
-const pool = require("../models/db");
-const QRCode = require("qrcode");
+const express = require("express")
+const router = express.Router()
 
-// CREATE MEMBER
-router.post("/add", async (req, res) => {
-  try {
-    const { name, phone, membership } = req.body;
+let members = [] // temporary (later connect DB)
 
-    const result = await pool.query(
-      "INSERT INTO members(name, phone, membership) VALUES($1,$2,$3) RETURNING *",
-      [name, phone, membership]
-    );
+// ADD MEMBER
+router.post("/add", (req, res) => {
+    const member = req.body
 
-    const member = result.rows[0];
+    // Prevent duplicates
+    const exists = members.find(
+        m => m.id === member.id || m.phone === member.phone
+    )
 
-    // Generate QR
-    const qr = await QRCode.toDataURL(`MEMBER:${member.id}`);
+    if (exists) {
+        return res.status(400).json({
+            message: "Member with same ID or phone already exists"
+        })
+    }
+
+    members.push(member)
 
     res.json({
-      success: true,
-      member,
-      qr
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+        message: "Member added successfully",
+        member
+    })
+})
 
 // GET MEMBERS
-router.get("/", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM members ORDER BY id DESC");
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
+router.get("/", (req, res) => {
+    res.json(members)
+})
 
-module.exports = router;
+module.exports = router
