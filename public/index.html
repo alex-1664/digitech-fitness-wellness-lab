@@ -1,107 +1,149 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Digitech Fitness</title>
-    <style>
-        body { font-family: Arial; background: #f4f6f9; }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 6px 0;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: green;
-            color: white;
-            border: none;
-        }
-        .member {
-            background: #eee;
-            margin: 10px 0;
-            padding: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Digitech Fitness Registration</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+h2 {
+  text-align: center;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: green;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: darkgreen;
+}
+
+.success {
+  color: green;
+  text-align: center;
+}
+
+.error {
+  color: red;
+  text-align: center;
+}
+</style>
+
 </head>
 <body>
 
 <div class="container">
-    <h2>🏋️ Digitech Fitness Registration</h2>
+  <h2>🏋️ Digitech Fitness Registration</h2>
 
-    <input id="name" placeholder="Full Name">
-    <input id="id" placeholder="ID Number">
-    <input id="phone" placeholder="Phone Number">
-    <input id="emergencyPhone" placeholder="Emergency Contact Phone">
-    <input id="weight" placeholder="Weight (kg)">
+  <div id="message"></div>
 
-    <select id="plan">
-        <option>Daily</option>
-        <option>Weekly</option>
-        <option>Monthly</option>
-    </select>
+  <input id="name" placeholder="Full Name" required>
+  <input id="id" placeholder="ID Number" required>
+  <input id="phone" placeholder="Phone Number" required>
 
-    <input id="regFee" placeholder="Registration Fee">
-    <input id="amount" placeholder="Amount Paid">
+  <select id="gender">
+    <option value="">Select Gender</option>
+    <option>Male</option>
+    <option>Female</option>
+  </select>
 
-    <button onclick="addMember()">Add Member</button>
-</div>
+  <select id="plan">
+    <option>Daily</option>
+    <option>Weekly</option>
+    <option>Monthly</option>
+  </select>
 
-<div class="container">
-    <h3>Members</h3>
-    <div id="members"></div>
+  <input id="membershipFee" placeholder="Membership Fee (Ksh)" type="number">
+  
+  <input id="emergencyName" placeholder="Emergency Contact Name">
+  <input id="emergencyPhone" placeholder="Emergency Contact Phone">
+
+  <input id="weight" placeholder="Weight (kg)" type="number">
+
+  <button onclick="addMember()">Add Member</button>
 </div>
 
 <script>
+
 async function addMember() {
-    const member = {
-        name: document.getElementById("name").value,
-        id: document.getElementById("id").value,
-        phone: document.getElementById("phone").value,
-        emergencyPhone: document.getElementById("emergencyPhone").value,
-        weight: document.getElementById("weight").value,
-        plan: document.getElementById("plan").value,
-        regFee: document.getElementById("regFee").value,
-        amount: document.getElementById("amount").value
+
+  const messageDiv = document.getElementById("message");
+
+  const member = {
+    name: document.getElementById("name").value.trim(),
+    id: document.getElementById("id").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    gender: document.getElementById("gender").value,
+    plan: document.getElementById("plan").value,
+    regFee: 400,
+    membershipFee: Number(document.getElementById("membershipFee").value),
+    regDate: new Date().toISOString().split("T")[0],
+    emergencyName: document.getElementById("emergencyName").value.trim(),
+    emergencyPhone: document.getElementById("emergencyPhone").value.trim(),
+    weight: Number(document.getElementById("weight").value)
+  };
+
+  // VALIDATION
+  if (!member.name || !member.id || !member.phone) {
+    messageDiv.innerHTML = "<p class='error'>Please fill all required fields</p>";
+    return;
+  }
+
+  try {
+    const res = await fetch("/add-member", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(member)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      messageDiv.innerHTML = `<p class='error'>${data.message}</p>`;
+      return;
     }
 
-    await fetch("/add-member", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(member)
-    })
+    messageDiv.innerHTML = "<p class='success'>Member added successfully!</p>";
 
-    loadMembers()
+    // CLEAR FORM
+    document.querySelectorAll("input").forEach(i => i.value = "");
+    document.getElementById("gender").value = "";
+    document.getElementById("plan").value = "Daily";
+
+  } catch (err) {
+    console.error(err);
+    messageDiv.innerHTML = "<p class='error'>Server error</p>";
+  }
 }
 
-async function loadMembers() {
-    const res = await fetch("/members")
-    const data = await res.json()
-
-    const list = document.getElementById("members")
-    list.innerHTML = ""
-
-    data.forEach(m => {
-        list.innerHTML += `
-            <div class="member">
-                <b>${m.name}</b><br>
-                ID: ${m.id}<br>
-                Phone: ${m.phone}<br>
-                Weight: ${m.weight} kg<br>
-                Plan: ${m.plan}<br>
-                Paid: KES ${m.amount}
-            </div>
-        `
-    })
-}
-
-loadMembers()
 </script>
 
 </body>
