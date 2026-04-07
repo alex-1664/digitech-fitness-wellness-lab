@@ -1,40 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+  <title>Digitech Fitness Admin Login</title>
+  <style>
+    body { font-family: Arial; background: #f4f6f9; display:flex; align-items:center; justify-content:center; height:100vh; }
+    .login-container { background:white; padding:30px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.2); width:300px; }
+    input { width:100%; padding:10px; margin:10px 0; }
+    button { width:100%; padding:12px; background:green; color:white; border:none; cursor:pointer; }
+    .error { color:red; margin-top:10px; }
+  </style>
 </head>
+<body>
 
-<body class="flex items-center justify-center h-screen bg-gray-100">
-
-<div class="bg-white p-6 rounded shadow w-80">
-  <h2 class="text-xl font-bold mb-4 text-center">Admin Login</h2>
-
-  <form id="loginForm" class="flex flex-col gap-3">
-    <input id="username" placeholder="Username" class="p-2 border rounded">
-    <input id="password" type="password" placeholder="Password" class="p-2 border rounded">
-
-    <button class="bg-green-500 text-white py-2 rounded">Login</button>
-  </form>
-
-  <p id="error" class="text-red-500 hidden mt-2">Wrong login</p>
+<div class="login-container">
+  <h2>Admin Login</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+  <div class="error" id="errorMsg"></div>
 </div>
 
-<script>
-document.getElementById('loginForm').onsubmit = function(e){
-  e.preventDefault();
-
-  const u = username.value;
-  const p = password.value;
-
-  if(u === "admin" && p === "1234"){
-    localStorage.setItem("isLoggedIn","true");
-    window.location.href = "dashboard.html";
-  } else {
-    error.classList.remove("hidden");
-  }
-}
-</script>
+<script src="login.js"></script>
 
 </body>
 </html>
