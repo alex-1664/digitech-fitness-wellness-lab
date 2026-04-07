@@ -1,21 +1,30 @@
-<style>
-  /* Table row hover animation */
-  #membersBody tr {
-    transition: all 0.3s ease; /* smooth transition for hover */
-  }
-  #membersBody tr:hover {
-    background-color: #f0f9ff; /* light blue background on hover */
-    transform: scale(1.01);    /* slight zoom effect */
-  }
-</style>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Digitech Gym Dashboard</title>
+
+  <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Axios -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- Custom Table Hover CSS -->
+  <style>
+    /* Table row hover animation */
+    #membersBody tr {
+      transition: all 0.3s ease; /* smooth transition for hover */
+    }
+    #membersBody tr:hover {
+      background-color: #f0f9ff; /* light blue background on hover */
+      transform: scale(1.01);    /* slight zoom effect */
+    }
+  </style>
+
 </head>
 <body class="bg-gray-100">
 
