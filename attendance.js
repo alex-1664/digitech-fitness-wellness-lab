@@ -1,76 +1,98 @@
-let attendance = JSON.parse(localStorage.getItem("attendance")) || []
+document.addEventListener("DOMContentLoaded", () => {
 
-const table = document.querySelector("#attendanceTable tbody")
+  const attendanceTableBody = document.querySelector("#attendanceTable tbody");
 
-function loadAttendance(){
+  // Load existing attendance from LocalStorage
+  let attendanceRecords = JSON.parse(localStorage.getItem("attendance")) || [];
 
-table.innerHTML=""
+  // Load registered members from dashboard (if available)
+  let members = JSON.parse(localStorage.getItem("members")) || [];
 
-attendance.forEach(record=>{
+  // Render table from stored records
+  function renderTable() {
+    attendanceTableBody.innerHTML = "";
+    attendanceRecords.forEach(record => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${record.memberId}</td>
+        <td>${record.date}</td>
+        <td>${record.time}</td>
+      `;
+      attendanceTableBody.prepend(row);
+    });
+  }
 
-let row = table.insertRow()
+  renderTable();
 
-row.insertCell(0).textContent = record.member
-row.insertCell(1).textContent = record.date
-row.insertCell(2).textContent = record.time
+  // Initialize Quagga scanner
+  Quagga.init({
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      target: document.querySelector('#scanner'),
+      constraints: { width: 500, height: 300, facingMode: "environment" }
+    },
+    decoder: { readers: ["code_128_reader", "ean_reader", "code_39_reader"] }
+  }, function(err) {
+    if (err) {
+      console.error(err);
+      alert("Camera initialization failed. Make sure your browser supports camera access.");
+      return;
+    }
+    Quagga.start();
+  });
 
-})
+  // On detection
+  Quagga.onDetected(function(result) {
+    const memberId = result.codeResult.code;
 
-}
+    // Optional: validate member exists
+    if (!members.some(m => m.id === memberId)) {
+      alert(`Member ID ${memberId} not found in registered members!`);
+      return;
+    }
 
-loadAttendance()
+    const now = new Date();
+    const date = now.toLocaleDateString();
+    const time = now.toLocaleTimeString();
 
-function recordAttendance(memberID){
+    // Check if this member has already scanned today
+    const alreadyScanned = attendanceRecords.some(r => r.memberId === memberId && r.date === date);
+    if (alreadyScanned) {
+      console.log(`${memberId} already scanned today.`);
+      return;
+    }
 
-const now = new Date()
+    // Add new record
+    attendanceRecords.push({ memberId, date, time });
+    localStorage.setItem("attendance", JSON.stringify(attendanceRecords));
 
-const record = {
+    // Add to table
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${memberId}</td>
+      <td>${date}</td>
+      <td>${time}</td>
+    `;
+    attendanceTableBody.prepend(row);
 
-member: memberID,
-date: now.toLocaleDateString(),
-time: now.toLocaleTimeString()
+    console.log(`Member scanned: ${memberId} at ${date} ${time}`);
+  });
 
-}
+  // CSV Export
+  document.getElementById("exportCSV").onclick = function() {
+    if (attendanceRecords.length === 0) return alert("No attendance records to export.");
 
-attendance.push(record)
+    let csv = "Member ID,Date,Time\n";
+    attendanceRecords.forEach(r => csv += `${r.memberId},${r.date},${r.time}\n`);
 
-localStorage.setItem("attendance",JSON.stringify(attendance))
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `attendance_${new Date().toLocaleDateString()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
-loadAttendance()
-
-alert("Check-in successful for "+memberID)
-
-}
-
-Quagga.init({
-
-inputStream:{
-name:"Live",
-type:"LiveStream",
-target:document.querySelector('#scanner')
-},
-
-decoder:{
-readers:["code_128_reader","ean_reader"]
-}
-
-},
-
-function(err){
-
-if(err){
-console.log(err)
-return
-}
-
-Quagga.start()
-
-})
-
-Quagga.onDetected(function(data){
-
-let code = data.codeResult.code
-
-recordAttendance(code)
-
-})
+});
