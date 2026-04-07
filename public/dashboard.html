@@ -2,41 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
   <title>Digitech Gym Dashboard</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link href="css/style.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <a href="dashboard.html" class="sidebar-link">Dashboard</a>
-    <a href="index.html" class="sidebar-link">Register Member</a>
-    <a href="attendance.html" class="sidebar-link">Attendance</a>
-    <a href="#" onclick="logout()">Logout</a>
+  <h1>💪 Digitech Gym Dashboard</h1>
+
+  <!-- Summary Cards -->
+  <div id="summary" class="cards">
+    <div>Total Members: <span id="totalMembers">0</span></div>
+    <div>Total Registration Fees: <span id="totalRegFees">Ksh 0</span></div>
+    <div>Total Membership Fees: <span id="totalMembershipFees">Ksh 0</span></div>
   </div>
 
-  <!-- Main Content -->
-  <div class="main">
-    <h1>💪 Digitech Fitness Dashboard</h1>
+  <!-- Member Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>ID</th>
+        <th>Phone</th>
+        <th>Emergency Name</th>
+        <th>Emergency Phone</th>
+        <th>Weight (kg)</th>
+        <th>Plan</th>
+        <th>Reg Fee</th>
+        <th>Membership Fee</th>
+        <th>Reg Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="membersBody"></tbody>
+  </table>
 
-    <div class="summary-cards">
-      <div>Total Members: <span id="totalMembers">0</span></div>
-      <div>Total Registration Fees: <span id="totalRegFees">Ksh 0</span></div>
-      <div>Total Membership Fees: <span id="totalMembershipFees">Ksh 0</span></div>
-    </div>
-
-    <canvas id="planChart" height="200"></canvas>
-
-    <table id="membersTable">
-      <thead>
-        <tr>
-          <th>Name</th><th>ID</th><th>Phone</th><th>Plan</th><th>Reg Fee</th>
-          <th>Membership Fee</th><th>Reg Date</th><th>Emergency Name</th><th>Emergency Phone</th><th>Weight</th>
-        </tr>
-      </thead>
-      <tbody id="membersBody"></tbody>
-    </table>
+  <!-- Weight Modal -->
+  <div id="weightModal" class="hidden">
+    <form id="weightForm">
+      <input type="date" id="weightDate" required>
+      <input type="number" id="newWeight" placeholder="Weight (kg)" required>
+      <button type="submit">Save</button>
+      <button type="button" id="closeWeightModal">Cancel</button>
+    </form>
   </div>
+
+  <!-- Charts -->
+  <canvas id="planChart" width="400" height="200"></canvas>
 
   <script src="js/dashboard.js"></script>
 </body>
