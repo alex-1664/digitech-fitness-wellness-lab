@@ -1,150 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Digitech Fitness Registration</title>
-
-<style>
-body {
-  font-family: Arial;
-  background: #f4f6f9;
-}
-
-.container {
-  max-width: 600px;
-  margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-}
-
-h2 {
-  text-align: center;
-}
-
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin: 6px 0;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  background: green;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: darkgreen;
-}
-
-.success {
-  color: green;
-  text-align: center;
-}
-
-.error {
-  color: red;
-  text-align: center;
-}
-</style>
-
+  <meta charset="UTF-8">
+  <title>Register Member</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-<div class="container">
-  <h2>🏋️ Digitech Fitness Registration</h2>
-
-  <div id="message"></div>
-
-  <input id="name" placeholder="Full Name" required>
-  <input id="id" placeholder="ID Number" required>
-  <input id="phone" placeholder="Phone Number" required>
-
-  <select id="gender">
-    <option value="">Select Gender</option>
-    <option>Male</option>
-    <option>Female</option>
-  </select>
-
-  <select id="plan">
-    <option>Daily</option>
-    <option>Weekly</option>
-    <option>Monthly</option>
-  </select>
-
-  <input id="membershipFee" placeholder="Membership Fee (Ksh)" type="number">
-  
-  <input id="emergencyName" placeholder="Emergency Contact Name">
-  <input id="emergencyPhone" placeholder="Emergency Contact Phone">
-
-  <input id="weight" placeholder="Weight (kg)" type="number">
-
-  <button onclick="addMember()">Add Member</button>
-</div>
-
-<script>
-
-async function addMember() {
-
-  const messageDiv = document.getElementById("message");
-
-  const member = {
-    name: document.getElementById("name").value.trim(),
-    id: document.getElementById("id").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    gender: document.getElementById("gender").value,
-    plan: document.getElementById("plan").value,
-    regFee: 400,
-    membershipFee: Number(document.getElementById("membershipFee").value),
-    regDate: new Date().toISOString().split("T")[0],
-    emergencyName: document.getElementById("emergencyName").value.trim(),
-    emergencyPhone: document.getElementById("emergencyPhone").value.trim(),
-    weight: Number(document.getElementById("weight").value)
-  };
-
-  // VALIDATION
-  if (!member.name || !member.id || !member.phone) {
-    messageDiv.innerHTML = "<p class='error'>Please fill all required fields</p>";
-    return;
-  }
-
-  try {
-    const res = await fetch("/add-member", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(member)
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      messageDiv.innerHTML = `<p class='error'>${data.message}</p>`;
-      return;
-    }
-
-    messageDiv.innerHTML = "<p class='success'>Member added successfully!</p>";
-
-    // CLEAR FORM
-    document.querySelectorAll("input").forEach(i => i.value = "");
-    document.getElementById("gender").value = "";
-    document.getElementById("plan").value = "Daily";
-
-  } catch (err) {
-    console.error(err);
-    messageDiv.innerHTML = "<p class='error'>Server error</p>";
-  }
-}
-
-</script>
-
+  <div class="container">
+    <h2>🏋️ Register Member</h2>
+    <form id="memberForm">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="text" id="id" placeholder="ID Number" required>
+      <input type="text" id="phone" placeholder="Phone Number" required>
+      <input type="text" id="emergencyName" placeholder="Emergency Contact Name" required>
+      <input type="text" id="emergencyPhone" placeholder="Emergency Contact Phone" required>
+      <input type="number" id="weight" placeholder="Weight (kg)" required>
+      <select id="plan">
+        <option>Daily</option><option>Weekly</option><option>Monthly</option>
+      </select>
+      <input type="number" id="regFee" placeholder="Registration Fee">
+      <input type="number" id="amount" placeholder="Amount Paid">
+      <button type="submit">Add Member</button>
+    </form>
+  </div>
+  <script src="js/index.js"></script>
 </body>
 </html>
