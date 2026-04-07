@@ -109,6 +109,36 @@
       </table>
     </div>
 
+    <!-- Add Member Button -->
+    <div class="mt-4 flex justify-end">
+      <button id="openAddModal" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">+ Add Member</button>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+      <div class="bg-white p-6 rounded-xl w-full max-w-md relative">
+        <h2 class="text-xl font-bold mb-4">Add New Member</h2>
+        <form id="addMemberForm" class="flex flex-col gap-3">
+          <input type="text" id="memberName" placeholder="Full Name" class="p-2 border rounded" required>
+          <input type="text" id="memberID" placeholder="ID Number" class="p-2 border rounded" required>
+          <input type="text" id="memberPhone" placeholder="Phone Number" class="p-2 border rounded" required>
+          <select id="memberPlan" class="p-2 border rounded" required>
+            <option value="">Select Plan</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+          <input type="number" id="memberRegFee" placeholder="Registration Fee" class="p-2 border rounded" required>
+          <input type="number" id="memberMembershipFee" placeholder="Membership Fee" class="p-2 border rounded" required>
+          <input type="date" id="memberRegDate" class="p-2 border rounded" required>
+          <div class="flex justify-end gap-2 mt-2">
+            <button type="button" id="closeAddModal" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Member</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 
   <!-- Sidebar Toggle Script -->
@@ -118,7 +148,6 @@
     const toggleSidebarMobile = document.getElementById('toggleSidebarMobile');
 
     function toggle() { sidebar.classList.toggle('-translate-x-full'); }
-
     toggleSidebar.addEventListener('click', toggle);
     toggleSidebarMobile.addEventListener('click', toggle);
   </script>
