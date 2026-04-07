@@ -1,42 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- 🔥 Prevent Browser Cache -->
-  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="pragma" content="no-cache" />
-  <meta http-equiv="expires" content="0" />
-
-  <title>Login</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+  <title>Admin Login</title>
+  <style>
+    body { font-family: Arial; background:#f4f6f9; }
+    .box {
+      max-width:400px;
+      margin:100px auto;
+      background:white;
+      padding:20px;
+      border-radius:10px;
+      text-align:center;
+    }
+    input {
+      width:100%;
+      padding:10px;
+      margin:10px 0;
+    }
+    button {
+      width:100%;
+      padding:10px;
+      background:green;
+      color:white;
+      border:none;
+    }
+  </style>
 </head>
+<body>
 
-<body class="flex items-center justify-center h-screen bg-gray-100">
+<div class="box">
+  <h2>🔐 Admin Login</h2>
 
-<div class="bg-white p-6 rounded shadow w-80">
-  <h2 class="text-xl font-bold mb-4 text-center">Admin Login</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
 
-  <form id="loginForm" class="flex flex-col gap-3">
-    <input id="username" placeholder="Username" class="p-2 border rounded">
-    <input id="password" type="password" placeholder="Password" class="p-2 border rounded">
+  <button onclick="login()">Login</button>
 
-    <button class="bg-green-500 text-white py-2 rounded">Login</button>
-  </form>
-
-  <p id="error" class="text-red-500 hidden mt-2">Wrong login</p>
+  <p id="error" style="color:red;"></p>
 </div>
 
 <script>
-document.getElementById('loginForm').onsubmit = function(e){
-  e.preventDefault();
-  const u = username.value;
-  const p = password.value;
+function login(){
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-  if(u === "admin" && p === "1234"){
-    localStorage.setItem("isLoggedIn","true");
-    window.location.href = "dashboard.html";
-  } else {
-    error.classList.remove("hidden");
-  }
+  fetch("/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({username,password})
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      localStorage.setItem("token","loggedin");
+      window.location.href = "dashboard.html";
+    } else {
+      document.getElementById("error").innerText = "Invalid login";
+    }
+  });
 }
 </script>
 
