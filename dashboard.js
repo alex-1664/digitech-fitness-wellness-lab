@@ -2,8 +2,9 @@ document.addEventListener("DOMContentLoaded", function(){
 
 let members = JSON.parse(localStorage.getItem("members")) || [];
 let selectedIndex = null;
+let chart;
 
-// SAVE
+// SAVE DATA
 function saveData(){
   localStorage.setItem("members", JSON.stringify(members));
 }
@@ -13,7 +14,7 @@ function renderTable(){
   const tbody = document.getElementById("membersBody");
   tbody.innerHTML = "";
 
-  members.forEach((m, i)=>{
+  members.forEach((m,i)=>{
     const latestWeight = m.weights[m.weights.length-1]?.weight || "";
 
     const tr = document.createElement("tr");
@@ -24,11 +25,13 @@ function renderTable(){
       <td>${m.phone}</td>
       <td>${m.plan}</td>
       <td>${latestWeight}</td>
+      <td>${m.emergencyName}</td>
+      <td>${m.emergencyPhone}</td>
       <td>
         <button onclick="editMember(${i})" class="text-blue-500">Edit</button>
-        <button onclick="deleteMember(${i})" class="text-red-500 ml-2">Delete</button>
-        <button onclick="addWeight(${i})" class="text-green-500 ml-2">Weight</button>
-        <button onclick="showChart(${i})" class="text-purple-500 ml-2">Chart</button>
+        <button onclick="deleteMember(${i})" class="text-red-500 ml-1">Delete</button>
+        <button onclick="addWeight(${i})" class="text-green-500 ml-1">Weight</button>
+        <button onclick="showChart(${i})" class="text-purple-500 ml-1">Chart</button>
       </td>
     `;
 
@@ -40,80 +43,67 @@ function renderTable(){
 document.getElementById("addMemberForm").onsubmit = function(e){
   e.preventDefault();
 
-  const member = {
-    name: memberName.value,
-    id: memberID.value,
-    phone: memberPhone.value,
-    gender: memberGender.value,
-    plan: memberPlan.value,
-    regDate: memberRegDate.value,
-    weights: [{
-      date: memberRegDate.value,
-      weight: Number(memberWeight.value)
-    }]
-  };
+  if(selectedIndex !== null){
+    // UPDATE EXISTING
+    members[selectedIndex].name = memberName.value;
+    members[selectedIndex].phone = memberPhone.value;
+    members[selectedIndex].plan = memberPlan.value;
+    members[selectedIndex].emergencyName = emergencyName.value;
+    members[selectedIndex].emergencyPhone = emergencyPhone.value;
 
-  members.push(member);
+    selectedIndex = null;
+  } else {
+    // ADD NEW
+    members.push({
+      name: memberName.value,
+      id: memberID.value,
+      phone: memberPhone.value,
+      gender: memberGender.value,
+      plan: memberPlan.value,
+      regDate: memberRegDate.value,
+      weights:[{date: memberRegDate.value, weight: Number(memberWeight.value)}],
+      emergencyName: emergencyName.value,
+      emergencyPhone: emergencyPhone.value
+    });
+  }
+
   saveData();
   renderTable();
   this.reset();
 };
 
-// DELETE
+// DELETE MEMBER
 window.deleteMember = function(i){
   members.splice(i,1);
   saveData();
   renderTable();
 };
 
-// EDIT
+// EDIT MEMBER
 window.editMember = function(i){
   const m = members[i];
-
   memberName.value = m.name;
   memberID.value = m.id;
   memberPhone.value = m.phone;
   memberPlan.value = m.plan;
-
+  emergencyName.value = m.emergencyName;
+  emergencyPhone.value = m.emergencyPhone;
   selectedIndex = i;
 };
 
-// UPDATE (when editing)
-document.getElementById("addMemberForm").addEventListener("submit", function(e){
-  if(selectedIndex !== null){
-    e.preventDefault();
-
-    members[selectedIndex].name = memberName.value;
-    members[selectedIndex].phone = memberPhone.value;
-    members[selectedIndex].plan = memberPlan.value;
-
-    selectedIndex = null;
-
-    saveData();
-    renderTable();
-    this.reset();
-  }
-});
-
 // ADD WEEKLY WEIGHT
 window.addWeight = function(i){
-  const weight = prompt("Enter new weight (kg):");
-  if(!weight) return;
+  const w = prompt("Enter new weight (kg):");
+  if(!w) return;
 
-  members[i].weights.push({
-    date: new Date().toISOString().split('T')[0],
-    weight: Number(weight)
-  });
-
+  members[i].weights.push({date: new Date().toISOString().split("T")[0], weight: Number(w)});
   saveData();
   renderTable();
 };
 
 // SHOW CHART
-let chart;
 window.showChart = function(i){
   const m = members[i];
-
   const dates = m.weights.map(w=>w.date);
   const weights = m.weights.map(w=>w.weight);
 
@@ -123,13 +113,8 @@ window.showChart = function(i){
 
   chart = new Chart(ctx,{
     type:"line",
-    data:{
-      labels:dates,
-      datasets:[{
-        label:"Weight (kg)",
-        data:weights
-      }]
-    }
+    data:{labels:dates,datasets:[{label:"Weight (kg)",data:weights,borderColor:"blue",fill:false}]},
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}
   });
 };
 
