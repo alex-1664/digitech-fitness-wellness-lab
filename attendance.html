@@ -2,67 +2,80 @@
 <html>
 
 <head>
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
 
-<title>Digitech Fitness Attendance</title>
+  <title>Digitech Fitness Attendance</title>
 
-<script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.min.js"></script>
+  <script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.min.js"></script>
 
-<style>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+    }
 
-body{
-font-family: Arial;
-text-align:center;
-}
+    #scanner {
+      width: 500px;
+      margin: auto;
+    }
 
-#scanner{
-width:500px;
-margin:auto;
-}
+    table {
+      margin-top: 20px;
+      width: 80%;
+      border-collapse: collapse;
+    }
 
-table{
-margin-top:20px;
-width:80%;
-border-collapse:collapse;
-}
+    th,
+    td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
 
-th,td{
-padding:10px;
-border:1px solid #ccc;
-}
+    th {
+      background: #0b7dda;
+      color: white;
+    }
 
-th{
-background:#0b7dda;
-color:white;
-}
+    button {
+      margin: 10px;
+      padding: 5px 10px;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-</style>
-
+    button:hover {
+      background: darkgreen;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Digitech Fitness & Wellness Lab</h2>
-<h3>Member Attendance Scanner</h3>
+  <h2>Digitech Fitness & Wellness Lab</h2>
+  <h3>Member Attendance Scanner</h3>
 
-<div id="scanner"></div>
+  <div id="scanner"></div>
 
-<h3>Attendance Records</h3>
+  <h3>Attendance Records</h3>
 
-<table id="attendanceTable">
+  <button id="exportCSV">Export CSV</button>
 
-<thead>
-<tr>
-<th>Member ID</th>
-<th>Date</th>
-<th>Time</th>
-</tr>
-</thead>
+  <table id="attendanceTable">
+    <thead>
+      <tr>
+        <th>Member ID</th>
+        <th>Date</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<tbody></tbody>
-
-</table>
-
-<script src="attendance.js"></script>
-
+  <script src="attendance.js?v=2"></script>
 </body>
 </html>
