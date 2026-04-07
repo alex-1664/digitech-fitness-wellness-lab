@@ -25,11 +25,11 @@
       <button id="toggleSidebar" class="md:hidden text-gray-500 hover:text-gray-700">☰</button>
     </div>
     <nav class="mt-6">
-      <a href="#" class="block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Dashboard</a>
-      <a href="#" class="block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Members</a>
-      <a href="#" class="block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Payments</a>
-      <a href="#" class="block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Reports</a>
-      <a href="#" class="block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Settings</a>
+      <a href="#" class="sidebar-link block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Dashboard</a>
+      <a href="#" class="sidebar-link block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Members</a>
+      <a href="#" class="sidebar-link block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Payments</a>
+      <a href="#" class="sidebar-link block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Reports</a>
+      <a href="#" class="sidebar-link block py-3 px-6 text-gray-700 hover:bg-green-100 rounded transition">Settings</a>
     </nav>
   </aside>
 
@@ -117,9 +117,7 @@
     const toggleSidebar = document.getElementById('toggleSidebar');
     const toggleSidebarMobile = document.getElementById('toggleSidebarMobile');
 
-    function toggle() {
-      sidebar.classList.toggle('-translate-x-full');
-    }
+    function toggle() { sidebar.classList.toggle('-translate-x-full'); }
 
     toggleSidebar.addEventListener('click', toggle);
     toggleSidebarMobile.addEventListener('click', toggle);
