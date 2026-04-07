@@ -1,102 +1,205 @@
-// Members array
-let members = [
-  {name:'Alex Kiio',id:'12345',phone:'0701055560',plan:'Monthly',regFee:400,membershipFee:1500,regDate:'2026-04-07'},
-  {name:'Mary Wanjiku',id:'12346',phone:'0712345678',plan:'Weekly',regFee:400,membershipFee:500,regDate:'2026-04-06'},
-];
+// MEMBERS DATA
+let members = [];
 
-// Update dashboard summary cards
+// ================= DASHBOARD =================
 function updateDashboard() {
   document.getElementById('totalMembers').textContent = members.length;
-  const totalReg = members.reduce((sum,m)=>sum+Number(m.regFee||0),0);
-  const totalMembership = members.reduce((sum,m)=>sum+Number(m.membershipFee||0),0);
+
+  const totalReg = members.reduce((s,m)=>s+Number(m.regFee||0),0);
+  const totalMembership = members.reduce((s,m)=>s+Number(m.membershipFee||0),0);
+
   document.getElementById('totalRegFees').textContent = `Ksh ${totalReg}`;
   document.getElementById('totalMembershipFees').textContent = `Ksh ${totalMembership}`;
 }
 
-// Render members table
+// ================= TABLE =================
 function renderTable() {
   const tbody = document.getElementById('membersBody');
   tbody.innerHTML = '';
-  members.forEach((m, idx)=>{
+
+  members.forEach((m, idx) => {
     const tr = document.createElement('tr');
+
     tr.innerHTML = `
       <td class="px-4 py-2">${m.name}</td>
       <td class="px-4 py-2">${m.id}</td>
       <td class="px-4 py-2">${m.phone}</td>
+      <td class="px-4 py-2">${m.gender}</td>
       <td class="px-4 py-2">${m.plan}</td>
       <td class="px-4 py-2">${m.regFee}</td>
       <td class="px-4 py-2">${m.membershipFee}</td>
       <td class="px-4 py-2">${m.regDate}</td>
+      <td class="px-4 py-2">${m.emergencyName}</td>
+      <td class="px-4 py-2">${m.emergencyPhone}</td>
+      <td class="px-4 py-2">${m.weights?.slice(-1)[0]?.weight || ''}</td>
       <td class="px-4 py-2">
         <button onclick="editMember(${idx})" class="text-blue-500">Edit</button>
         <button onclick="deleteMember(${idx})" class="text-red-500 ml-2">Delete</button>
+        <button onclick="openWeightModal(${idx})" class="text-green-500 ml-2">Weight</button>
+        <button onclick="viewWeightChart(${idx})" class="text-purple-500 ml-2">Progress</button>
       </td>
     `;
+
     tbody.appendChild(tr);
   });
+
   updateDashboard();
   renderCharts();
 }
 
-// Charts
-function renderCharts(){
-  const planCounts = {Daily:0,Weekly:0,Monthly:0};
-  members.forEach(m=>{if(planCounts[m.plan]!==undefined) planCounts[m.plan]++;});
-
-  const planCtx = document.getElementById('planChart').getContext('2d');
-  new Chart(planCtx,{type:'pie',data:{labels:Object.keys(planCounts),datasets:[{data:Object.values(planCounts),backgroundColor:['#3b82f6','#8b5cf6','#f59e0b']}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
-
-  const totalReg = members.reduce((sum,m)=>sum+Number(m.regFee||0),0);
-  const totalMembership = members.reduce((sum,m)=>sum+Number(m.membershipFee||0),0);
-  const paymentCtx = document.getElementById('paymentsChart').getContext('2d');
-  new Chart(paymentCtx,{type:'bar',data:{labels:['Registration Fees','Membership Fees'],datasets:[{label:'Ksh',data:[totalReg,totalMembership],backgroundColor:['#10b981','#f59e0b']}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-}
-
-// Search
-document.getElementById('searchInput').addEventListener('input', e=>{
-  const query = e.target.value.toLowerCase();
-  renderTable();
-  // Filtering can be added later
-});
-
-// CSV/PDF placeholders
-function exportCSV(){alert('Export CSV coming soon!');}
-function exportPDF(){alert('Export PDF coming soon!');}
-
-// Edit/Delete placeholders
-function editMember(idx){alert('Edit member: '+members[idx].name);}
-function deleteMember(idx){if(confirm('Delete '+members[idx].name+'?')){members.splice(idx,1);renderTable();}}
-
-// Active sidebar highlight
-document.querySelectorAll('.sidebar-link').forEach(link=>{
-  if(link.textContent.trim() === 'Dashboard') link.classList.add('bg-green-100','font-bold');
-});
-
-// Add Member Modal
+// ================= ADD MEMBER =================
 const addModal = document.getElementById('addModal');
 const openAddModal = document.getElementById('openAddModal');
 const closeAddModal = document.getElementById('closeAddModal');
 const addMemberForm = document.getElementById('addMemberForm');
 
-openAddModal.addEventListener('click',()=>addModal.classList.remove('hidden'));
-closeAddModal.addEventListener('click',()=>addModal.classList.add('hidden'));
-addMemberForm.addEventListener('submit',e=>{
+openAddModal.onclick = ()=> addModal.classList.remove('hidden');
+closeAddModal.onclick = ()=> addModal.classList.add('hidden');
+
+addMemberForm.onsubmit = (e)=>{
   e.preventDefault();
-  const name=document.getElementById('memberName').value.trim();
-  const id=document.getElementById('memberID').value.trim();
-  const phone=document.getElementById('memberPhone').value.trim();
-  const plan=document.getElementById('memberPlan').value;
-  const regFee=Number(document.getElementById('memberRegFee').value);
-  const membershipFee=Number(document.getElementById('memberMembershipFee').value);
-  const regDate=document.getElementById('memberRegDate').value;
 
-  if(members.some(m=>m.id===id)){alert('Member with this ID already exists!'); return;}
+  const member = {
+    name: document.getElementById('memberName').value.trim(),
+    id: document.getElementById('memberID').value.trim(),
+    phone: document.getElementById('memberPhone').value.trim(),
+    gender: document.getElementById('memberGender').value,
+    plan: document.getElementById('memberPlan').value,
+    regFee: Number(document.getElementById('memberRegFee').value),
+    membershipFee: Number(document.getElementById('memberMembershipFee').value),
+    regDate: document.getElementById('memberRegDate').value,
+    emergencyName: document.getElementById('emergencyName').value.trim(),
+    emergencyPhone: document.getElementById('emergencyPhone').value.trim(),
+    weights: [
+      {
+        date: document.getElementById('memberRegDate').value,
+        weight: Number(document.getElementById('memberWeight').value)
+      }
+    ]
+  };
 
-  members.push({name,id,phone,plan,regFee,membershipFee,regDate});
+  if(members.some(m=>m.id===member.id)){
+    alert('Member already exists!');
+    return;
+  }
+
+  members.push(member);
   renderTable();
+
   addMemberForm.reset();
   addModal.classList.add('hidden');
-});
+};
 
-// Initial render
+// ================= EDIT MEMBER =================
+let editIndex = null;
+const editModal = document.getElementById('editModal');
+
+function editMember(idx){
+  editIndex = idx;
+  const m = members[idx];
+
+  document.getElementById('editMemberName').value = m.name;
+  document.getElementById('editMemberID').value = m.id;
+  document.getElementById('editMemberPhone').value = m.phone;
+  document.getElementById('editMemberGender').value = m.gender;
+  document.getElementById('editMemberPlan').value = m.plan;
+  document.getElementById('editMemberRegFee').value = m.regFee;
+  document.getElementById('editMemberMembershipFee').value = m.membershipFee;
+  document.getElementById('editMemberRegDate').value = m.regDate;
+  document.getElementById('editEmergencyName').value = m.emergencyName;
+  document.getElementById('editEmergencyPhone').value = m.emergencyPhone;
+
+  editModal.classList.remove('hidden');
+}
+
+document.getElementById('closeEditModal').onclick = ()=> editModal.classList.add('hidden');
+
+document.getElementById('editMemberForm').onsubmit = (e)=>{
+  e.preventDefault();
+
+  const m = members[editIndex];
+
+  const newId = document.getElementById('editMemberID').value.trim();
+
+  if(members.some((x,i)=>x.id===newId && i!==editIndex)){
+    alert('Duplicate ID!');
+    return;
+  }
+
+  m.name = document.getElementById('editMemberName').value.trim();
+  m.id = newId;
+  m.phone = document.getElementById('editMemberPhone').value.trim();
+  m.gender = document.getElementById('editMemberGender').value;
+  m.plan = document.getElementById('editMemberPlan').value;
+  m.regFee = Number(document.getElementById('editMemberRegFee').value);
+  m.membershipFee = Number(document.getElementById('editMemberMembershipFee').value);
+  m.regDate = document.getElementById('editMemberRegDate').value;
+  m.emergencyName = document.getElementById('editEmergencyName').value.trim();
+  m.emergencyPhone = document.getElementById('editEmergencyPhone').value.trim();
+
+  renderTable();
+  editModal.classList.add('hidden');
+};
+
+// ================= DELETE =================
+function deleteMember(idx){
+  if(confirm('Delete member?')){
+    members.splice(idx,1);
+    renderTable();
+  }
+}
+
+// ================= WEIGHT =================
+let weightIndex = null;
+const weightModal = document.getElementById('weightModal');
+
+function openWeightModal(idx){
+  weightIndex = idx;
+  weightModal.classList.remove('hidden');
+}
+
+document.getElementById('closeWeightModal').onclick = ()=> weightModal.classList.add('hidden');
+
+document.getElementById('weightForm').onsubmit = (e)=>{
+  e.preventDefault();
+
+  const date = document.getElementById('weightDate').value;
+  const weight = Number(document.getElementById('newWeight').value);
+
+  members[weightIndex].weights.push({date,weight});
+
+  alert('Weight updated!');
+  weightModal.classList.add('hidden');
+  renderTable();
+};
+
+// ================= CHARTS =================
+function renderCharts(){
+  const planCounts = {Daily:0,Weekly:0,Monthly:0};
+  members.forEach(m=>{if(planCounts[m.plan]!==undefined) planCounts[m.plan]++;});
+
+  const ctx = document.getElementById('planChart').getContext('2d');
+  new Chart(ctx,{
+    type:'pie',
+    data:{labels:Object.keys(planCounts),datasets:[{data:Object.values(planCounts)}]}
+  });
+}
+
+// ================= WEIGHT CHART =================
+function viewWeightChart(idx){
+  const m = members[idx];
+  if(!m.weights.length){ alert('No data'); return;}
+
+  const ctx = document.getElementById('paymentsChart').getContext('2d');
+
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:m.weights.map(w=>w.date),
+      datasets:[{label:'Weight (kg)',data:m.weights.map(w=>w.weight)}]
+    }
+  });
+}
+
+// ================= INIT =================
 renderTable();
