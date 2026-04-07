@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Digitech Gym Dashboard</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- Custom Table Hover CSS -->
+  <style>
+    /* Table row hover animation */
+    #membersBody tr {
+      transition: all 0.3s ease; /* smooth transition for hover */
+    }
+    #membersBody tr:hover {
+      background-color: #f0f9ff; /* light blue background on hover */
+      transform: scale(1.01);    /* slight zoom effect */
+    }
+  </style>
+
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto p-4">
+
+  <h1 class="text-3xl font-bold text-center mb-6 text-gradient bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+    💪 Digitech Gym Dashboard
+  </h1>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-r from-green-400 to-blue-500 p-6 rounded-xl shadow-lg text-white transform transition hover:scale-105">
+      <h2 class="text-gray-100">Total Members</h2>
+      <p id="totalMembers" class="text-3xl font-bold mt-2">0</p>
+    </div>
+    <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-6 rounded-xl shadow-lg text-white transform transition hover:scale-105">
+      <h2 class="text-gray-100">Total Registration Fees</h2>
+      <p id="totalRegFees" class="text-3xl font-bold mt-2">Ksh 0</p>
+    </div>
+    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-xl shadow-lg text-white transform transition hover:scale-105">
+      <h2 class="text-gray-100">Total Membership Fees</h2>
+      <p id="totalMembershipFees" class="text-3xl font-bold mt-2">Ksh 0</p>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 class="text-gray-500 mb-4 font-semibold">Members by Plan</h2>
+      <canvas id="planChart"></canvas>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 class="text-gray-500 mb-4 font-semibold">Payments Overview</h2>
+      <canvas id="paymentsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Search & Export -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+    <input type="text" id="searchInput" placeholder="Search by Name, ID, Phone" class="p-2 border rounded w-full md:w-1/3">
+    <select id="planFilter" class="p-2 border rounded">
+      <option value="">All Plans</option>
+      <option value="Daily">Daily</option>
+      <option value="Weekly">Weekly</option>
+      <option value="Monthly">Monthly</option>
+    </select>
+    <div class="flex gap-2">
+      <button onclick="exportCSV()" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">CSV</button>
+      <button onclick="exportPDF()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">PDF</button>
+    </div>
+  </div>
+
+  <!-- Member Table -->
+  <div class="bg-white p-4 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200" id="membersTable">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-2">Name</th>
+          <th class="px-4 py-2">ID</th>
+          <th class="px-4 py-2">Phone</th>
+          <th class="px-4 py-2">Plan</th>
+          <th class="px-4 py-2">Reg Fee</th>
+          <th class="px-4 py-2">Membership Fee</th>
+          <th class="px-4 py-2">Reg Date</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="membersBody" class="bg-white divide-y divide-gray-200 transition-all duration-300">
+        <!-- Rows dynamically injected -->
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>
