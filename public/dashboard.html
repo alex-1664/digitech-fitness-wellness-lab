@@ -1,130 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard</title>
-
-  <style>
-    body {
-      font-family: Arial;
-      background: linear-gradient(to right, #1e3a8a, #2563eb);
-      color: white;
-      padding: 20px;
-    }
-
-    .cards {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .card {
-      flex: 1;
-      min-width: 200px;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      transition: 0.3s;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-    }
-
-    table {
-      width: 100%;
-      background: white;
-      color: black;
-      margin-top: 20px;
-      border-radius: 10px;
-    }
-
-    th {
-      background: #2563eb;
-      color: white;
-    }
-
-    th, td {
-      padding: 10px;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Digitech Gym Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+<body class="bg-gray-100">
 
-<body>
+<div class="container mx-auto p-4">
 
-<h1>💪 Gym Dashboard</h1>
+  <h1 class="text-3xl font-bold text-center mb-6 text-gradient bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+    💪 Digitech Gym Dashboard
+  </h1>
 
-<div class="cards">
-  <div class="card">
-    <h2 id="members"></h2>
-    <p>Total Members</p>
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-r from-green-400 to-blue-500 p-6 rounded-xl shadow-lg text-white transform transition hover:scale-105">
+      <h2 class="text-gray-100">Total Members</h2>
+      <p id="totalMembers" class="text-3xl font-bold mt-2">0</p>
+    </div>
+    <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-6 rounded-xl shadow-lg text-white transform transition hover:scale-105">
+      <h2 class="text-gray-100">Total Registration Fees</h2>
+      <p id="totalRegFees" class="text-3xl font-bold mt-2">Ksh 0</p>
+    </div>
+    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-xl shadow-lg text-white transform transition hover:scale-105">
+      <h2 class="text-gray-100">Total Membership Fees</h2>
+      <p id="totalMembershipFees" class="text-3xl font-bold mt-2">Ksh 0</p>
+    </div>
   </div>
 
-  <div class="card">
-    <h2 id="registration"></h2>
-    <p>Registration (Ksh)</p>
+  <!-- Charts -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 class="text-gray-500 mb-4 font-semibold">Members by Plan</h2>
+      <canvas id="planChart"></canvas>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 class="text-gray-500 mb-4 font-semibold">Payments Overview</h2>
+      <canvas id="paymentsChart"></canvas>
+    </div>
   </div>
 
-  <div class="card">
-    <h2 id="gym"></h2>
-    <p>Gym Revenue (Ksh)</p>
+  <!-- Search & Export -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+    <input type="text" id="searchInput" placeholder="Search by Name, ID, Phone" class="p-2 border rounded w-full md:w-1/3">
+    <select id="planFilter" class="p-2 border rounded">
+      <option value="">All Plans</option>
+      <option value="Daily">Daily</option>
+      <option value="Weekly">Weekly</option>
+      <option value="Monthly">Monthly</option>
+    </select>
+    <div class="flex gap-2">
+      <button onclick="exportCSV()" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">CSV</button>
+      <button onclick="exportPDF()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">PDF</button>
+    </div>
   </div>
+
+  <!-- Member Table -->
+  <div class="bg-white p-4 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200" id="membersTable">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-2">Name</th>
+          <th class="px-4 py-2">ID</th>
+          <th class="px-4 py-2">Phone</th>
+          <th class="px-4 py-2">Plan</th>
+          <th class="px-4 py-2">Reg Fee</th>
+          <th class="px-4 py-2">Membership Fee</th>
+          <th class="px-4 py-2">Reg Date</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="membersBody" class="bg-white divide-y divide-gray-200 transition-all duration-300">
+        <!-- Rows dynamically injected -->
+      </tbody>
+    </table>
+  </div>
+
 </div>
 
-<table>
-<thead>
-<tr>
-  <th>Name</th>
-  <th>Phone</th>
-  <th>Membership</th>
-  <th>Expiry</th>
-  <th>Total Paid</th>
-</tr>
-</thead>
-<tbody id="table"></tbody>
-</table>
-
-<script>
-async function load() {
-
-  const membersRes = await fetch("http://localhost:5000/members");
-  const members = await membersRes.json();
-
-  const paymentsRes = await fetch("http://localhost:5000/payments");
-  const payments = await paymentsRes.json();
-
-  let reg = 0;
-  let gym = 0;
-
-  payments.forEach(p => {
-    if (p.type === "registration") reg += p.amount;
-    if (p.type === "membership") gym += p.amount;
-  });
-
-  document.getElementById("members").innerText = members.length;
-  document.getElementById("registration").innerText = reg;
-  document.getElementById("gym").innerText = gym;
-
-  const table = document.getElementById("table");
-  table.innerHTML = "";
-
-  members.forEach(m => {
-    table.innerHTML += `
-      <tr>
-        <td>${m.name}</td>
-        <td>${m.phone}</td>
-        <td>${m.membership}</td>
-        <td>${m.expiry_date?.split("T")[0]}</td>
-        <td>${m.total_gym_paid}</td>
-      </tr>
-    `;
-  });
-}
-
-load();
-</script>
-
+<script src="dashboard.js"></script>
 </body>
 </html>
