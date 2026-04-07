@@ -1,35 +1,30 @@
-// src/routes/dashboardRoutes.js
-const express = require("express");
-const router = express.Router();
-const pool = require("../models/db");
+const express = require("express")
+const router = express.Router()
 
-router.get("/", async (req, res) => {
-  try {
-    const members = await pool.query("SELECT COUNT(*) FROM members");
-    const today = await pool.query("SELECT COUNT(*) FROM attendance WHERE DATE(time)=CURRENT_DATE");
-    const revenue = await pool.query("SELECT SUM(amount) FROM payments");
+let members = [] // should later come from DB
 
-    const daily = await pool.query(`
-      SELECT TO_CHAR(time,'Dy') as day, COUNT(*) as count
-      FROM attendance
-      WHERE time >= NOW() - INTERVAL '7 days'
-      GROUP BY day
-      ORDER BY day
-    `);
+router.get("/", (req, res) => {
 
-    const monthly = await pool.query("SELECT month, amount FROM payments");
+    let totalMembers = members.length
+    let totalRevenue = 0
+    let totalRegFees = 0
+    let gymRevenue = 0
+
+    members.forEach(m => {
+        const amount = Number(m.amount || 0)
+        const regFee = Number(m.regFee || 0)
+
+        totalRevenue += amount
+        totalRegFees += regFee
+        gymRevenue += (amount - regFee)
+    })
 
     res.json({
-      members: parseInt(members.rows[0].count),
-      checkins: parseInt(today.rows[0].count),
-      revenue: parseInt(revenue.rows[0].sum || 0),
-      expiring: 0, // can calculate based on expiry
-      dailyCheckins: daily.rows,
-      monthlyRevenue: monthly.rows
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+        totalMembers,
+        totalRevenue,
+        totalRegFees,
+        gymRevenue
+    })
+})
 
-module.exports = router;
+module.exports = router
