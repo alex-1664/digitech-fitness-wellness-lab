@@ -1,274 +1,142 @@
-document.addEventListener("DOMContentLoaded", () => {
+let members = [];
 
-  const membersBody = document.getElementById("membersBody");
-  const weightModal = document.getElementById("weightModal");
-  const weightForm = document.getElementById("weightForm");
-  const closeWeightModal = document.getElementById("closeWeightModal");
-  const modalName = document.getElementById("modalName");
-  const modalId = document.getElementById("modalId");
-  const modalPlan = document.getElementById("modalPlan");
-  const modalStatus = document.getElementById("modalStatus");
-  const memberModal = document.getElementById("memberModal");
-  const closeMemberModal = document.getElementById("closeMemberModal");
-  const beep = document.getElementById("beepSound");
+// ================= LOAD =================
+async function loadMembers(){
+  const res = await fetch("/members");
+  members = await res.json();
+  renderTable();
+}
 
-  let members = [];
-  let attendanceRecords = JSON.parse(localStorage.getItem("attendance")) || [];
-  let weightHistory = JSON.parse(localStorage.getItem("weightHistory")) || [];
+// ================= DASHBOARD =================
+function updateDashboard() {
+  document.getElementById('totalMembers').textContent = members.length;
 
-  // ===============================
-  // LOAD MEMBERS FROM API
-  // ===============================
-  async function loadMembers() {
-    try {
-      const res = await fetch("/members");
-      members = await res.json();
-      renderMembers();
-      renderWeightChart();
-      renderAttendanceChart();
-    } catch (err) {
-      console.error("Error loading members:", err);
-    }
+  const totalReg = members.reduce((s,m)=>s+Number(m.regFee||0),0);
+  const totalMembership = members.reduce((s,m)=>s+Number(m.membershipFee||0),0);
+
+  document.getElementById('totalRegFees').textContent = `Ksh ${totalReg}`;
+  document.getElementById('totalMembershipFees').textContent = `Ksh ${totalMembership}`;
+}
+
+// ================= TABLE =================
+function renderTable() {
+  const tbody = document.getElementById('membersBody');
+  tbody.innerHTML = '';
+
+  members.forEach((m) => {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>${m.name}</td>
+      <td>${m.id}</td>
+      <td>${m.phone}</td>
+      <td>${m.gender || ''}</td>
+      <td>${m.plan}</td>
+      <td>${m.regFee}</td>
+      <td>${m.membershipFee}</td>
+      <td>${m.regDate || ''}</td>
+      <td>${m.emergencyName || ''}</td>
+      <td>${m.emergencyPhone || ''}</td>
+      <td>${m.weights?.slice(-1)[0]?.weight || ''}</td>
+      <td>
+        <button onclick="editMember('${m.id}')">Edit</button>
+        <button onclick="deleteMember('${m.id}')">Delete</button>
+        <button onclick="openWeightModal('${m.id}')">Weight</button>
+        <button onclick="viewWeightChart('${m.id}')">Progress</button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  updateDashboard();
+}
+
+// ================= DELETE =================
+async function deleteMember(id){
+  if(confirm("Delete member?")){
+    await fetch(`/delete-member/${id}`, { method: "DELETE" });
+    loadMembers();
   }
+}
 
-  // ===============================
-  // RENDER MEMBERS TABLE
-  // ===============================
-  function renderMembers() {
-    membersBody.innerHTML = "";
+// ================= EDIT =================
+let currentEditId = null;
 
-    if (members.length === 0) {
-      membersBody.innerHTML = `
-        <tr>
-          <td colspan="10" style="text-align:center;padding:20px;">
-            No members found
-          </td>
-        </tr>
-      `;
-      return;
-    }
+function editMember(id){
+  const m = members.find(x => x.id === id);
+  currentEditId = id;
 
-    members.forEach(m => {
-      const tr = document.createElement("tr");
+  document.getElementById('editMemberName').value = m.name;
+  document.getElementById('editMemberPhone').value = m.phone;
 
-      tr.innerHTML = `
-        <td>${m.name || ''}</td>
-        <td>${m.id || ''}</td>
-        <td>${m.phone || ''}</td>
-        <td>${m.plan || ''}</td>
-        <td>${m.regFee || 0}</td>
-        <td>${m.amount || 0}</td>
-        <td>${m.emergencyPhone || ''}</td>
-        <td>${m.weight || ''}</td>
-        <td>
-          <button onclick="updateWeight('${m.id}')">Weight</button>
-        </td>
-        <td>
-          <button onclick="viewCard('${m.id}')">Card</button>
-        </td>
-      `;
+  document.getElementById('editModal').classList.remove('hidden');
+}
 
-      membersBody.appendChild(tr);
-    });
+document.getElementById('editMemberForm').onsubmit = async (e)=>{
+  e.preventDefault();
 
-    updateSummary();
-  }
+  const updated = {
+    name: document.getElementById('editMemberName').value,
+    phone: document.getElementById('editMemberPhone').value
+  };
 
-  // ===============================
-  // SUMMARY
-  // ===============================
-  function updateSummary(){
-    document.getElementById("totalMembers").textContent = members.length;
+  await fetch(`/update-member/${currentEditId}`, {
+    method: "PUT",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(updated)
+  });
 
-    const weights = members.map(m => parseFloat(m.weight)).filter(w => !isNaN(w));
-    const avgWeight = weights.length
-      ? (weights.reduce((a,b)=>a+b,0)/weights.length).toFixed(1)
-      : 0;
-
-    document.getElementById("avgWeight").textContent = avgWeight;
-
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate()-6);
-
-    const presentDays = attendanceRecords.filter(r => new Date(r.date) >= weekStart).length;
-    const possibleDays = members.length * 7;
-
-    document.getElementById("weeklyAttendance").textContent =
-      possibleDays ? Math.round((presentDays/possibleDays)*100) + "%" : "0%";
-  }
-
-  // ===============================
-  // VIEW CARD
-  // ===============================
-  window.viewCard = function(id){
-    window.open(`member-card.html?id=${id}`, "_blank");
-  }
-
-  // ===============================
-  // UPDATE WEIGHT
-  // ===============================
-  window.updateWeight = function(id){
-    weightModal.style.display = "flex";
-    weightForm.dataset.memberId = id;
-  }
-
-  closeWeightModal.onclick = () => weightModal.style.display="none";
-
-  weightForm.onsubmit = function(e){
-    e.preventDefault();
-
-    const id = this.dataset.memberId;
-    const date = document.getElementById("weightDate").value;
-    const newWeight = document.getElementById("newWeight").value;
-
-    const member = members.find(m => m.id === id);
-
-    if(member){
-      member.weight = newWeight;
-      weightHistory.push({memberId:id, date, weight:newWeight});
-    }
-
-    localStorage.setItem("weightHistory", JSON.stringify(weightHistory));
-
-    renderMembers();
-    renderWeightChart();
-
-    weightModal.style.display="none";
-  }
-
-  // ===============================
-  // SCANNER (ATTENDANCE)
-  // ===============================
-  if (document.querySelector('#scanner')) {
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#scanner'),
-        constraints: { facingMode: "environment", width: 500, height: 300 }
-      },
-      decoder: {
-        readers: ["code_128_reader","ean_reader","code_39_reader"]
-      }
-    }, err => {
-      if(err) console.error(err);
-      else Quagga.start();
-    });
-
-    Quagga.onDetected(result => {
-      const memberId = result.codeResult.code;
-      const member = members.find(m => m.id === memberId);
-
-      if(!member){
-        alert(`Member ID ${memberId} not registered.`);
-        return;
-      }
-
-      const today = new Date().toLocaleDateString();
-
-      let todayRecord = attendanceRecords.find(r =>
-        r.memberId === memberId && r.date === today
-      );
-
-      if(todayRecord){
-        if(!todayRecord.timeOut)
-          todayRecord.timeOut = new Date().toLocaleTimeString();
-      } else {
-        attendanceRecords.push({
-          memberId,
-          date: today,
-          timeIn: new Date().toLocaleTimeString(),
-          timeOut: null
-        });
-      }
-
-      localStorage.setItem("attendance", JSON.stringify(attendanceRecords));
-
-      if (beep) beep.play();
-
-      modalName.textContent = member.name;
-      modalId.textContent = member.id;
-      modalPlan.textContent = member.plan;
-      modalStatus.textContent = todayRecord ? "Checked Out" : "Checked In";
-
-      memberModal.style.display = "flex";
-
-      renderMembers();
-      renderAttendanceChart();
-    });
-  }
-
-  closeMemberModal.onclick = () => memberModal.style.display="none";
-
-  // ===============================
-  // WEIGHT CHART
-  // ===============================
-  function renderWeightChart(){
-    const ctx = document.getElementById("weightChart")?.getContext("2d");
-    if(!ctx) return;
-
-    const labels = [...new Set(weightHistory.map(w=>w.date))];
-
-    const datasets = members.map(m => ({
-      label: m.name,
-      data: labels.map(date => {
-        const w = weightHistory.find(w => w.memberId === m.id && w.date === date);
-        return w ? w.weight : null;
-      }),
-      borderColor: "#" + Math.floor(Math.random()*16777215).toString(16),
-      fill:false,
-      tension:0.2
-    }));
-
-    if(window.weightChart) window.weightChart.destroy();
-
-    window.weightChart = new Chart(ctx,{
-      type:"line",
-      data:{labels,datasets}
-    });
-  }
-
-  // ===============================
-  // ATTENDANCE CHART
-  // ===============================
-  function renderAttendanceChart(){
-    const ctx = document.getElementById("attendanceChart")?.getContext("2d");
-    if(!ctx) return;
-
-    const labels = [];
-    const data = [];
-
-    for(let i=6;i>=0;i--){
-      const d = new Date();
-      d.setDate(d.getDate()-i);
-
-      const dateStr = d.toLocaleDateString();
-
-      labels.push(dateStr);
-
-      data.push(
-        attendanceRecords.filter(r => r.date === dateStr).length
-      );
-    }
-
-    if(window.attChart) window.attChart.destroy();
-
-    window.attChart = new Chart(ctx,{
-      type:"bar",
-      data:{
-        labels,
-        datasets:[{
-          label:"Members Present",
-          data,
-          backgroundColor:"green"
-        }]
-      }
-    });
-  }
-
-  // ===============================
-  // INITIAL LOAD
-  // ===============================
   loadMembers();
+  document.getElementById('editModal').classList.add('hidden');
+};
 
-});
+// ================= WEIGHT =================
+let weightId = null;
+
+function openWeightModal(id){
+  weightId = id;
+  document.getElementById('weightModal').classList.remove('hidden');
+}
+
+document.getElementById('weightForm').onsubmit = async (e)=>{
+  e.preventDefault();
+
+  const data = {
+    date: document.getElementById('weightDate').value,
+    weight: Number(document.getElementById('newWeight').value)
+  };
+
+  await fetch(`/update-weight/${weightId}`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(data)
+  });
+
+  alert("Weight updated");
+  loadMembers();
+  document.getElementById('weightModal').classList.add('hidden');
+};
+
+// ================= CHART =================
+function viewWeightChart(id){
+  const m = members.find(x => x.id === id);
+
+  if(!m.weights || m.weights.length === 0){
+    alert("No data");
+    return;
+  }
+
+  const ctx = document.getElementById('paymentsChart').getContext('2d');
+
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:m.weights.map(w=>w.date),
+      datasets:[{label:'Weight', data:m.weights.map(w=>w.weight)}]
+    }
+  });
+}
+
+// ================= INIT =================
+loadMembers();
