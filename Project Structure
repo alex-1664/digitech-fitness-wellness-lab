@@ -1,20 +1,22 @@
-digitech-fitness-system/
+digitech-gym-system/
 │
-├── package.json
-├── server.js
-├── .env (optional locally; use Render environment variables)
-├── public/
-│   ├── login.html
-│   ├── dashboard.html
-│   ├── scan.html
-│   ├── admin.html
-│   ├── css/ (optional)
-│   └── js/ (optional)
-└── src/
-    ├── models/
-    │   └── db.js
-    └── routes/
-        ├── memberRoutes.js
-        ├── attendanceRoutes.js
-        ├── dashboardRoutes.js
-        └── adminRoutes.js
+├── public/                   # Frontend HTML, CSS, JS
+│   ├── index.html            # Member registration page
+│   ├── dashboard.html        # Admin dashboard page
+│   ├── login.html            # Admin login page
+│   ├── attendance.html       # Attendance scanner page
+│   ├── member-card.html      # Member card with QR
+│   │
+│   ├── css/
+│   │   └── style.css         # Main CSS (tables, hover, cards)
+│   │
+│   └── js/
+│       ├── index.js          # Handles registration form logic
+│       ├── dashboard.js      # Dashboard: summary cards, table, charts, weight tracking
+│       ├── login.js          # Admin login logic
+│       ├── attendance.js     # Scanner logic with Quagga
+│       └── utils.js          # Optional shared functions
+│
+├── server.js                 # Node.js/Express backend (API routes for members, login)
+├── package.json              # Node dependencies
+└── package-lock.json
