@@ -3,34 +3,41 @@
 <head>
 <title>Member Card</title>
 <style>
-body{ font-family: Arial; text-align:center; background:#f4f4f4; }
-.card{ width:320px; margin:auto; padding:20px; background:white; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.2); }
-.photo{ width:100px; height:100px; border-radius:50%; object-fit:cover; }
-.qr{ margin-top:10px; }
+body{font-family:Arial;text-align:center;background:#eee;}
+.card{
+  width:300px;
+  margin:auto;
+  padding:20px;
+  background:white;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+img{width:100px;height:100px;border-radius:50%;}
 </style>
 </head>
 <body>
+
 <div class="card">
-<h2>DIGITECH FITNESS</h2>
-<img id="photo" class="photo" src="" />
-<h3 id="name"></h3>
-<p>ID: <span id="memberId"></span></p>
-<p>Expires: <span id="expiry"></span></p>
-<img id="qr" class="qr" width="150"/>
+  <h2>DIGITECH FITNESS</h2>
+  <img id="photo">
+  <h3 id="name"></h3>
+  <p>ID: <span id="id"></span></p>
+  <p>Plan: <span id="plan"></span></p>
 </div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const memberId = params.get("id");
-fetch("/api/members/" + memberId)
-.then(res => res.json())
-.then(member => {
-  document.getElementById("name").innerText = member.name;
-  document.getElementById("memberId").innerText = member.memberId;
-  document.getElementById("expiry").innerText = member.expiry;
-  document.getElementById("photo").src = member.photo;
-  document.getElementById("qr").src = member.qrCode;
-});
+const id = new URLSearchParams(location.search).get("id");
+const members = JSON.parse(localStorage.getItem("members")) || [];
+
+const m = members.find(x=>x.id===id);
+
+if(m){
+  document.getElementById("name").innerText = m.name;
+  document.getElementById("id").innerText = m.id;
+  document.getElementById("plan").innerText = m.plan;
+  document.getElementById("photo").src = m.photo || "";
+}
 </script>
+
 </body>
 </html>
