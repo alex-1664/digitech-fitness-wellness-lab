@@ -1,57 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="pragma" content="no-cache">
-  <meta http-equiv="expires" content="0">
-  <title>Digitech Gym Dashboard</title>
-  <link href="css/style.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <h1>💪 Digitech Gym Dashboard</h1>
+<!-- ADD MEMBER MODAL (VERTICAL + PHOTO) -->
+<div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded w-full max-w-md overflow-y-auto max-h-[90vh]">
 
-  <!-- Summary Cards -->
-  <div id="summary" class="cards">
-    <div>Total Members: <span id="totalMembers">0</span></div>
-    <div>Total Registration Fees: <span id="totalRegFees">Ksh 0</span></div>
-    <div>Total Membership Fees: <span id="totalMembershipFees">Ksh 0</span></div>
-  </div>
+    <h2 class="text-xl font-bold mb-4 text-center">➕ Register Member</h2>
 
-  <!-- Member Table -->
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>ID</th>
-        <th>Phone</th>
-        <th>Emergency Name</th>
-        <th>Emergency Phone</th>
-        <th>Weight (kg)</th>
-        <th>Plan</th>
-        <th>Reg Fee</th>
-        <th>Membership Fee</th>
-        <th>Reg Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="membersBody"></tbody>
-  </table>
+    <form id="addForm" class="flex flex-col gap-3">
 
-  <!-- Weight Modal -->
-  <div id="weightModal" class="hidden">
-    <form id="weightForm">
-      <input type="date" id="weightDate" required>
-      <input type="number" id="newWeight" placeholder="Weight (kg)" required>
-      <button type="submit">Save</button>
-      <button type="button" id="closeWeightModal">Cancel</button>
+      <input id="name" placeholder="Full Name" class="border p-3 rounded w-full" required>
+      <input id="id" placeholder="ID Number" class="border p-3 rounded w-full" required>
+      <input id="phone" placeholder="Phone Number" class="border p-3 rounded w-full" required>
+
+      <input id="emergencyName" placeholder="Emergency Contact Name" class="border p-3 rounded w-full" required>
+      <input id="emergencyPhone" placeholder="Emergency Contact Phone" class="border p-3 rounded w-full" required>
+
+      <input id="weight" type="number" placeholder="Weight (kg)" class="border p-3 rounded w-full" required>
+
+      <!-- ✅ NEW PHOTO FIELD -->
+      <input id="photo" type="file" accept="image/*" class="border p-3 rounded w-full">
+
+      <select id="plan" class="border p-3 rounded w-full">
+        <option>Daily</option>
+        <option>Weekly</option>
+        <option>Monthly</option>
+      </select>
+
+      <input id="regFee" type="number" placeholder="Registration Fee" class="border p-3 rounded w-full">
+      <input id="membershipFee" type="number" placeholder="Membership Fee" class="border p-3 rounded w-full">
+
+      <div class="flex justify-between mt-3">
+        <button type="button" onclick="closeAddModal()" class="bg-gray-400 px-4 py-2 rounded w-1/2 mr-2">Cancel</button>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-1/2">Save Member</button>
+      </div>
+
     </form>
   </div>
-
-  <!-- Charts -->
-  <canvas id="planChart" width="400" height="200"></canvas>
-
-  <script src="js/dashboard.js"></script>
-</body>
-</html>
+</div>
